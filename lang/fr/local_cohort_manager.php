@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Gestionnaire de cohortes';
-$string['cohortmanager:manage'] = 'Gérer les déploiements de cohortes';
+$string['cohort_manager:manage'] = 'Gérer les déploiements de cohortes';
 
 // Page principale.
 $string['searchplaceholder'] = 'Rechercher des cohortes par nom, identifiant ou description...';

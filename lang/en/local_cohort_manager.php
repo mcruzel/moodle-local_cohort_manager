@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Cohort Manager';
-$string['cohortmanager:manage'] = 'Manage cohort deployments';
+$string['cohort_manager:manage'] = 'Manage cohort deployments';
 
 // Index page.
 $string['searchplaceholder'] = 'Search cohorts by name, ID number or description...';
