@@ -1,5 +1,5 @@
 /* Inline forms in the enrolments table need width constraints. */
-.local-cohort-manager-detail .generaltable .form-inline .form-control-sm {
+.local-cohort-manager-detail .generaltable form .form-control-sm {
     max-width: 200px;
 }
 
@@ -17,4 +17,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* User search input group on the user cohorts page. */
+.local-cohort-manager-user .local-cohort-manager-user-search {
+    max-width: 500px;
+}
+
+/* Cohort autocomplete container on the user cohorts page. */
+.local-cohort-manager-user .local-cohort-manager-cohort-select {
+    min-width: 300px;
 }

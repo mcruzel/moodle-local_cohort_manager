@@ -53,16 +53,21 @@ $makesorturl = function(string $column) use ($sort, $dir, $sortparams) {
         array_merge($sortparams, ['sort' => $column, 'dir' => $newdir])))->out(false);
 };
 
+// Sort indicator icon (decorative, empty alt) and aria-sort value for the active column.
+$sorticon = $dir === 'ASC' ? $OUTPUT->pix_icon('t/sort_asc', '') : $OUTPUT->pix_icon('t/sort_desc', '');
+$ariasort = $dir === 'ASC' ? 'ascending' : 'descending';
+
 $data = [
     'searchurl'   => (new moodle_url('/local/cohort_manager/index.php'))->out(false),
     'searchvalue' => $search,
     'has_cohorts' => !empty($cohorts),
-    'cohorts'     => array_values(array_map(function($cohort) {
+    'cohorts'     => array_values(array_map(function($cohort) use ($context) {
         return [
             'id'          => $cohort->id,
-            'name'        => $cohort->name,
+            'name'        => format_string($cohort->name, true, ['context' => $context]),
             'idnumber'    => $cohort->idnumber,
-            'description' => strip_tags($cohort->description ?? ''),
+            'description' => strip_tags(format_text($cohort->description ?? '',
+                $cohort->descriptionformat ?? FORMAT_HTML, ['context' => $context])),
             'membercount' => (int)$cohort->membercount,
             'membersurl'  => (new moodle_url('/cohort/assign.php', ['id' => $cohort->id]))->out(false),
             'enrolcount'  => (int)$cohort->enrolcount,
@@ -75,10 +80,14 @@ $data = [
     'sort_idnumber_url'    => $makesorturl('idnumber'),
     'sort_membercount_url' => $makesorturl('membercount'),
     'sort_enrolcount_url'  => $makesorturl('enrolcount'),
-    'sort_name_icon'        => $sort === 'name' ? ($dir === 'ASC' ? '▲' : '▼') : '',
-    'sort_idnumber_icon'    => $sort === 'idnumber' ? ($dir === 'ASC' ? '▲' : '▼') : '',
-    'sort_membercount_icon' => $sort === 'membercount' ? ($dir === 'ASC' ? '▲' : '▼') : '',
-    'sort_enrolcount_icon'  => $sort === 'enrolcount' ? ($dir === 'ASC' ? '▲' : '▼') : '',
+    'sort_name_icon'        => $sort === 'name' ? $sorticon : '',
+    'sort_idnumber_icon'    => $sort === 'idnumber' ? $sorticon : '',
+    'sort_membercount_icon' => $sort === 'membercount' ? $sorticon : '',
+    'sort_enrolcount_icon'  => $sort === 'enrolcount' ? $sorticon : '',
+    'sort_name_ariasort'        => $sort === 'name' ? $ariasort : '',
+    'sort_idnumber_ariasort'    => $sort === 'idnumber' ? $ariasort : '',
+    'sort_membercount_ariasort' => $sort === 'membercount' ? $ariasort : '',
+    'sort_enrolcount_ariasort'  => $sort === 'enrolcount' ? $ariasort : '',
 ];
 
 echo $OUTPUT->header();

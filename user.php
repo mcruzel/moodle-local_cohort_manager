@@ -52,7 +52,10 @@ if ($usersearch !== '') {
 $selecteduser = null;
 $usercohorts = [];
 if ($userid > 0) {
-    $selecteduser = $DB->get_record('user', ['id' => $userid, 'deleted' => 0], 'id, firstname, lastname, email, username');
+    // Include all name fields so fullname() can honour the site's fullname display settings.
+    $namefields = \core_user\fields::for_name()->get_required_fields();
+    $userfields = implode(', ', array_unique(array_merge(['id', 'email', 'username'], $namefields)));
+    $selecteduser = $DB->get_record('user', ['id' => $userid, 'deleted' => 0], $userfields);
     if ($selecteduser) {
         $usercohorts = \local_cohort_manager\manager::get_user_cohorts($userid);
     }

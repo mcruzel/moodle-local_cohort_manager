@@ -24,92 +24,71 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Gestionnaire de cohortes';
-$string['cohort_manager:manage'] = 'Gérer les déploiements de cohortes';
-
-// Page principale.
-$string['searchplaceholder'] = 'Rechercher des cohortes par nom, identifiant ou description...';
-$string['search'] = 'Rechercher';
-$string['cohortname'] = 'Nom de la cohorte';
-$string['cohortidnumber'] = 'Identifiant';
 $string['actions'] = 'Actions';
-$string['viewdetails'] = 'Voir les détails';
-$string['nocohortsfound'] = 'Aucune cohorte trouvée.';
-
-// Page de détail.
+$string['add'] = 'Ajouter';
+$string['addtocohort'] = 'Ajouter à une cohorte';
 $string['backtocohortlist'] = 'Retour à la liste des cohortes';
-$string['cohortnamesection'] = 'Nom de la cohorte';
-$string['renamecohort'] = 'Renommer la cohorte';
-$string['enrolledcourses'] = 'Cours inscrits';
-$string['coursename'] = 'Nom du cours';
-$string['courseshortname'] = 'Nom abrégé';
-$string['groupname'] = 'Nom du groupe';
-$string['newgroupname'] = 'Nouveau nom du groupe';
-$string['rename'] = 'Renommer';
-$string['nogroup'] = 'Aucun groupe';
-$string['noenrolments'] = 'Cette cohorte n\'est inscrite dans aucun cours.';
-
-// Renommage en lot.
-$string['batchrenamegroups'] = 'Renommage des groupes en lot';
-$string['batchrenamedesc'] = 'Renommer tous les groupes associés aux inscriptions de cette cohorte avec le même nom. Cela affecte tous les cours où cette cohorte est inscrite.';
 $string['batchrename'] = 'Renommer tous les groupes';
 $string['batchrenameconfirm'] = 'Êtes-vous sûr de vouloir renommer tous les groupes de cette cohorte ? Cette action est irréversible.';
-
-// Notifications.
+$string['batchrenamedesc'] = 'Renommer tous les groupes associés aux inscriptions de cette cohorte avec le même nom. Cela affecte tous les cours où cette cohorte est inscrite.';
+$string['batchrenamegroups'] = 'Renommage des groupes en lot';
+$string['cancel'] = 'Annuler';
+$string['cannotmanagecohort'] = 'Cette cohorte est gérée par un autre composant (\'{$a}\') et ne peut pas être modifiée ici.';
+$string['cohort_manager:manage'] = 'Gérer les déploiements de cohortes';
+$string['cohortdeleted'] = 'Cohorte supprimée avec succès.';
+$string['cohortidnumber'] = 'Identifiant';
+$string['cohortname'] = 'Nom de la cohorte';
+$string['cohortnamesection'] = 'Nom de la cohorte';
+$string['cohortnotfound'] = 'Cohorte introuvable.';
 $string['cohortrenamed'] = 'Cohorte renommée avec succès.';
-$string['grouprenamed'] = 'Groupe renommé avec succès.';
-$string['groupsbatchrenamed'] = 'Tous les groupes ont été renommés avec succès.';
-
-// Création de groupe.
-$string['creategroup'] = 'Créer le groupe';
-$string['groupcreated'] = 'Groupe créé et associé à la méthode d\'inscription avec succès.';
-$string['groupalreadyexists'] = 'Un groupe est déjà associé à cette méthode d\'inscription.';
-
-// Gestion des cohortes d'un utilisateur.
-$string['usercohorts'] = 'Cohortes d\'un utilisateur';
-$string['searchuser'] = 'Rechercher un utilisateur';
-$string['searchuserplaceholder'] = 'Rechercher par nom, email ou identifiant...';
-$string['username'] = 'Identifiant';
-$string['fullname'] = 'Nom complet';
-$string['email'] = 'Email';
-$string['selectuser'] = 'Sélectionner';
-$string['selecteduser'] = 'Sélectionné';
 $string['cohortsforuser'] = 'Cohortes de l\'utilisateur';
-$string['addtocohort'] = 'Ajouter à une cohorte';
-$string['selectcohort'] = '-- Sélectionner une cohorte --';
-$string['add'] = 'Ajouter';
-$string['remove'] = 'Retirer';
-$string['removeconfirm'] = 'Êtes-vous sûr de vouloir retirer cet utilisateur de cette cohorte ?';
-$string['useraddedtocohort'] = 'Utilisateur ajouté à la cohorte avec succès.';
-$string['userremovedfromcohort'] = 'Utilisateur retiré de la cohorte avec succès.';
-$string['usernomemberships'] = 'Cet utilisateur n\'appartient à aucune cohorte.';
-
-// Colonnes du tableau des cohortes.
-$string['description'] = 'Description';
-$string['membercount'] = 'Membres';
-$string['enrolcount'] = 'Inscriptions';
-$string['searchcohortplaceholder'] = 'Rechercher une cohorte...';
-
-// Suppression de cohorte.
+$string['confirmdelete'] = 'Supprimer définitivement';
+$string['coursename'] = 'Nom du cours';
+$string['courseshortname'] = 'Nom abrégé';
+$string['creategroup'] = 'Créer le groupe';
 $string['deletecohort'] = 'Supprimer la cohorte';
-$string['deletewarning'] = 'Cette action est irréversible. La cohorte et toutes ses associations de membres seront définitivement supprimées.';
+$string['deletenamenotmatch'] = 'Le nom saisi ne correspond pas au nom de la cohorte. Suppression annulée.';
 $string['deletetypename'] = 'Pour confirmer, saisissez le nom exact de la cohorte ci-dessous :';
 $string['deletetypeplaceholder'] = 'Saisissez le nom de la cohorte ici...';
-$string['cancel'] = 'Annuler';
-$string['confirmdelete'] = 'Supprimer définitivement';
-$string['cohortdeleted'] = 'Cohorte supprimée avec succès.';
-$string['deletenamenotmatch'] = 'Le nom saisi ne correspond pas au nom de la cohorte. Suppression annulée.';
-
-// Erreurs.
-$string['cohortnotfound'] = 'Cohorte introuvable.';
+$string['deletewarning'] = 'Cette action est irréversible. La cohorte et toutes ses associations de membres seront définitivement supprimées.';
+$string['description'] = 'Description';
+$string['email'] = 'Email';
 $string['emptycohortname'] = 'Le nom de la cohorte ne peut pas être vide.';
 $string['emptygroupname'] = 'Le nom du groupe ne peut pas être vide.';
-$string['invalidaction'] = 'Action invalide.';
-
-// Événements.
+$string['enrolcount'] = 'Inscriptions';
+$string['enrolledcourses'] = 'Cours inscrits';
 $string['eventcohortrenamed'] = 'Cohorte renommée';
 $string['eventgrouprenamed'] = 'Groupe renommé';
 $string['eventgroupsbatchrenamed'] = 'Groupes renommés en lot';
-
-// Confidentialité.
+$string['fullname'] = 'Nom complet';
+$string['groupalreadyexists'] = 'Un groupe est déjà associé à cette méthode d\'inscription.';
+$string['groupcreated'] = 'Groupe créé et associé à la méthode d\'inscription avec succès.';
+$string['groupname'] = 'Nom du groupe';
+$string['grouprenamed'] = 'Groupe renommé avec succès.';
+$string['groupsbatchrenamed'] = 'Tous les groupes ont été renommés avec succès.';
+$string['invalidaction'] = 'Action invalide.';
+$string['membercount'] = 'Membres';
+$string['newgroupname'] = 'Nouveau nom du groupe';
+$string['nocohortsfound'] = 'Aucune cohorte trouvée.';
+$string['noenrolments'] = 'Cette cohorte n\'est inscrite dans aucun cours.';
+$string['nogroup'] = 'Aucun groupe';
+$string['pluginname'] = 'Gestionnaire de cohortes';
 $string['privacy:metadata'] = 'Le plugin Gestionnaire de cohortes ne stocke aucune donnée personnelle.';
+$string['remove'] = 'Retirer';
+$string['removeconfirm'] = 'Êtes-vous sûr de vouloir retirer cet utilisateur de cette cohorte ?';
+$string['rename'] = 'Renommer';
+$string['renamecohort'] = 'Renommer la cohorte';
+$string['search'] = 'Rechercher';
+$string['searchcohortplaceholder'] = 'Rechercher une cohorte...';
+$string['searchplaceholder'] = 'Rechercher des cohortes par nom, identifiant ou description...';
+$string['searchuser'] = 'Rechercher un utilisateur';
+$string['searchuserplaceholder'] = 'Rechercher par nom, email ou identifiant...';
+$string['selectcohort'] = '-- Sélectionner une cohorte --';
+$string['selecteduser'] = 'Sélectionné';
+$string['selectuser'] = 'Sélectionner';
+$string['useraddedtocohort'] = 'Utilisateur ajouté à la cohorte avec succès.';
+$string['usercohorts'] = 'Cohortes d\'un utilisateur';
+$string['username'] = 'Identifiant';
+$string['usernomemberships'] = 'Cet utilisateur n\'appartient à aucune cohorte.';
+$string['userremovedfromcohort'] = 'Utilisateur retiré de la cohorte avec succès.';
+$string['viewdetails'] = 'Voir les détails';

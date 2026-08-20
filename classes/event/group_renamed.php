@@ -67,4 +67,24 @@ class group_renamed extends \core\event\base {
     public function get_url() {
         return new \moodle_url('/group/index.php', ['id' => $this->courseid]);
     }
+
+    /**
+     * Returns the objectid mapping for backup/restore.
+     *
+     * @return array
+     */
+    public static function get_objectid_mapping() {
+        return ['db' => 'groups', 'restore' => 'group'];
+    }
+
+    /**
+     * Returns the mapping of the 'other' data for backup/restore.
+     *
+     * The 'other' array only contains the new group name — no ids to re-map on restore.
+     *
+     * @return bool
+     */
+    public static function get_other_mapping() {
+        return false;
+    }
 }

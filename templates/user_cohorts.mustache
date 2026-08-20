@@ -14,6 +14,37 @@
     * sesskey
     * has_user_cohorts - Boolean
     * user_cohorts - Array of: id, name, idnumber
+
+    Example context (json):
+    {
+        "searchurl": "/local/cohort_manager/user.php",
+        "searchvalue": "smith",
+        "has_users": true,
+        "users": [
+            {
+                "id": 12,
+                "fullname": "John Smith",
+                "email": "john.smith@example.com",
+                "username": "jsmith",
+                "selecturl": "/local/cohort_manager/user.php?userid=12",
+                "selected": true
+            }
+        ],
+        "has_selected_user": true,
+        "selected_user_id": 12,
+        "selected_user_name": "John Smith",
+        "selected_user_email": "john.smith@example.com",
+        "action_url": "/local/cohort_manager/useraction.php",
+        "sesskey": "abc123",
+        "has_user_cohorts": true,
+        "user_cohorts": [
+            {
+                "id": 1,
+                "name": "Cohort A",
+                "idnumber": "COH-A"
+            }
+        ]
+    }
 }}
 <div class="local-cohort-manager-user">
 
@@ -24,16 +55,14 @@
         </div>
         <div class="card-body">
             <form method="get" action="{{searchurl}}" class="mb-3">
-                <div class="input-group" style="max-width: 500px;">
+                <div class="input-group local-cohort-manager-user-search">
                     <input type="text" name="usersearch" value="{{searchvalue}}"
                            class="form-control"
                            placeholder="{{#str}}searchuserplaceholder, local_cohort_manager{{/str}}"
                            aria-label="{{#str}}searchuserplaceholder, local_cohort_manager{{/str}}">
-                    <div class="input-group-append">
-                        <button type="submit" class="btn btn-primary">
-                            {{#str}}search, local_cohort_manager{{/str}}
-                        </button>
-                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        {{#str}}search, local_cohort_manager{{/str}}
+                    </button>
                 </div>
             </form>
 
@@ -60,7 +89,7 @@
                             </a>
                             {{/selected}}
                             {{#selected}}
-                            <span class="badge badge-primary">{{#str}}selecteduser, local_cohort_manager{{/str}}</span>
+                            <span class="badge text-bg-primary">{{#str}}selecteduser, local_cohort_manager{{/str}}</span>
                             {{/selected}}
                         </td>
                     </tr>
@@ -83,12 +112,12 @@
         <div class="card-body">
 
             {{! Add cohort form with AJAX autocomplete }}
-            <form method="post" action="{{action_url}}" class="form-inline mb-3">
+            <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="action" value="addcohort">
                 <input type="hidden" name="userid" value="{{selected_user_id}}">
-                <label for="cohortid" class="mr-2">{{#str}}addtocohort, local_cohort_manager{{/str}}</label>
-                <div class="mr-2" style="min-width: 300px;">
+                <label for="cohortid" class="me-2">{{#str}}addtocohort, local_cohort_manager{{/str}}</label>
+                <div class="me-2 local-cohort-manager-cohort-select">
                     <select name="cohortid" id="cohortid" class="form-control"
                             data-userid="{{selected_user_id}}">
                         <option value="">{{#str}}selectcohort, local_cohort_manager{{/str}}</option>
@@ -105,7 +134,7 @@
                     '#cohortid',
                     false,
                     'local_cohort_manager/cohort_selector',
-                    '{{#str}}searchcohortplaceholder, local_cohort_manager{{/str}}'
+                    {{#quote}}{{#str}}searchcohortplaceholder, local_cohort_manager{{/str}}{{/quote}}
                 );
             });
             {{/js}}
@@ -128,7 +157,7 @@
                         <td>{{name}}</td>
                         <td>{{idnumber}}</td>
                         <td>
-                            <form method="post" action="{{action_url}}" class="form-inline">
+                            <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
                                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                                 <input type="hidden" name="action" value="removecohort">
                                 <input type="hidden" name="userid" value="{{selected_user_id}}">

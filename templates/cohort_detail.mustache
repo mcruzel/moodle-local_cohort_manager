@@ -5,7 +5,8 @@
 
     Context variables required:
     * cohort_id - The cohort ID
-    * cohort_name - The cohort name
+    * cohort_name - The cohort name (formatted for display)
+    * cohort_name_raw - The raw cohort name (for the rename input and delete confirmation)
     * backurl - URL to go back to the cohort list
     * action_url - URL for action.php POST
     * sesskey - Session key for CSRF protection
@@ -17,6 +18,7 @@
     {
         "cohort_id": 1,
         "cohort_name": "Cohort A",
+        "cohort_name_raw": "Cohort A",
         "backurl": "/local/cohort_manager/index.php",
         "action_url": "/local/cohort_manager/action.php",
         "sesskey": "abc123",
@@ -39,7 +41,7 @@
 
     {{! Back navigation }}
     <div class="mb-3">
-        <a href="{{backurl}}" class="btn btn-link pl-0">
+        <a href="{{backurl}}" class="btn btn-link ps-0">
             &laquo; {{#str}}backtocohortlist, local_cohort_manager{{/str}}
         </a>
     </div>
@@ -54,12 +56,12 @@
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="action" value="renamecohort">
                 <input type="hidden" name="cohortid" value="{{cohort_id}}">
-                <div class="form-inline">
-                    <label for="cohortname" class="sr-only">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <label for="cohortname" class="visually-hidden">
                         {{#str}}cohortname, local_cohort_manager{{/str}}
                     </label>
                     <input type="text" id="cohortname" name="cohortname"
-                           value="{{cohort_name}}" class="form-control mr-2" required>
+                           value="{{cohort_name_raw}}" class="form-control me-2" required>
                     <button type="submit" class="btn btn-primary">
                         {{#str}}renamecohort, local_cohort_manager{{/str}}
                     </button>
@@ -80,13 +82,13 @@
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="action" value="batchrename">
                 <input type="hidden" name="cohortid" value="{{cohort_id}}">
-                <div class="form-inline">
-                    <label for="batchgroupname" class="sr-only">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <label for="batchgroupname" class="visually-hidden">
                         {{#str}}newgroupname, local_cohort_manager{{/str}}
                     </label>
                     <input type="text" id="batchgroupname" name="batchgroupname"
                            placeholder="{{#str}}newgroupname, local_cohort_manager{{/str}}"
-                           class="form-control mr-2" required>
+                           class="form-control me-2" required>
                     <span class="d-none" id="batchConfirmMsg">{{#str}}batchrenameconfirm, local_cohort_manager{{/str}}</span>
                     <button type="submit" class="btn btn-warning" id="batchRenameBtn">
                         {{#str}}batchrename, local_cohort_manager{{/str}}
@@ -119,27 +121,27 @@
                         {{groupname}}
                     {{/has_group}}
                     {{^has_group}}
-                        <span class="text-muted font-italic">
+                        <span class="text-muted fst-italic">
                             {{#str}}nogroup, local_cohort_manager{{/str}}
                         </span>
                     {{/has_group}}
                 </td>
                 <td>
                     {{#has_group}}
-                    <form method="post" action="{{action_url}}" class="form-inline">
+                    <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
                         <input type="hidden" name="sesskey" value="{{sesskey}}">
                         <input type="hidden" name="action" value="renamegroup">
                         <input type="hidden" name="cohortid" value="{{cohort_id}}">
                         <input type="hidden" name="groupid" value="{{groupid}}">
                         <input type="text" name="groupname" value="{{groupname}}"
-                               class="form-control form-control-sm mr-1" required>
+                               class="form-control form-control-sm me-1" required>
                         <button type="submit" class="btn btn-sm btn-secondary">
                             {{#str}}rename, local_cohort_manager{{/str}}
                         </button>
                     </form>
                     {{/has_group}}
                     {{^has_group}}
-                    <form method="post" action="{{action_url}}" class="form-inline">
+                    <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
                         <input type="hidden" name="sesskey" value="{{sesskey}}">
                         <input type="hidden" name="action" value="creategroup">
                         <input type="hidden" name="cohortid" value="{{cohort_id}}">
@@ -165,7 +167,7 @@
     {{! Delete cohort section }}
     <hr>
     <div class="mt-4">
-        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
             {{#str}}deletecohort, local_cohort_manager{{/str}}
         </button>
     </div>
@@ -178,9 +180,8 @@
                     <h5 class="modal-title" id="deleteModalLabel">
                         {{#str}}deletecohort, local_cohort_manager{{/str}}
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{#str}}closebuttontitle, core{{/str}}"></button>
                 </div>
                 <form method="post" action="{{action_url}}" id="deleteCohortForm">
                     <div class="modal-body">
@@ -191,15 +192,15 @@
                             {{#str}}deletewarning, local_cohort_manager{{/str}}
                         </div>
                         <p>{{#str}}deletetypename, local_cohort_manager{{/str}}</p>
-                        <p class="font-weight-bold">{{cohort_name}}</p>
-                        <div class="form-group">
+                        <p class="fw-bold">{{cohort_name}}</p>
+                        <div class="mb-3">
                             <input type="text" id="confirmname" name="confirmname"
                                    class="form-control" autocomplete="off" required
                                    placeholder="{{#str}}deletetypeplaceholder, local_cohort_manager{{/str}}">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             {{#str}}cancel, local_cohort_manager{{/str}}
                         </button>
                         <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>
@@ -213,7 +214,7 @@
 
     {{! Hidden element carrying the raw cohort name for JS comparison.
          Using a data-attribute ensures proper encoding/decoding by the browser. }}
-    <span id="deleteExpectedName" data-name="{{cohort_name}}" class="d-none"></span>
+    <span id="deleteExpectedName" data-name="{{cohort_name_raw}}" class="d-none"></span>
 
     {{! JS to enable delete button only when name matches, and handle batch rename confirm }}
     {{#js}}

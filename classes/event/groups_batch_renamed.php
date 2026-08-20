@@ -69,4 +69,26 @@ class groups_batch_renamed extends \core\event\base {
     public function get_url() {
         return new \moodle_url('/local/cohort_manager/view.php', ['id' => $this->objectid]);
     }
+
+    /**
+     * Returns the objectid mapping for backup/restore.
+     *
+     * Cohorts are not included in course backups, so the id cannot be mapped on restore.
+     *
+     * @return array
+     */
+    public static function get_objectid_mapping() {
+        return ['db' => 'cohort', 'restore' => \core\event\base::NOT_MAPPED];
+    }
+
+    /**
+     * Returns the mapping of the 'other' data for backup/restore.
+     *
+     * The 'other' array only contains the new group name and a count — no ids to re-map on restore.
+     *
+     * @return bool
+     */
+    public static function get_other_mapping() {
+        return false;
+    }
 }

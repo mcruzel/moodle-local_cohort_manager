@@ -11,7 +11,42 @@
     * pagination - HTML for the paging bar (empty if only one page)
     * usercohortsurl - URL to user cohort management page
     * sort_name_url, sort_idnumber_url, sort_membercount_url, sort_enrolcount_url - Sort URLs
-    * sort_name_icon, sort_idnumber_icon, sort_membercount_icon, sort_enrolcount_icon - Sort direction indicators
+    * sort_name_icon, sort_idnumber_icon, sort_membercount_icon, sort_enrolcount_icon - Sort direction indicator icons (HTML)
+    * sort_name_ariasort, sort_idnumber_ariasort, sort_membercount_ariasort, sort_enrolcount_ariasort -
+      aria-sort value ('ascending'/'descending') for the sorted column, empty for the others
+
+    Example context (json):
+    {
+        "searchurl": "/local/cohort_manager/index.php",
+        "searchvalue": "science",
+        "has_cohorts": true,
+        "cohorts": [
+            {
+                "id": 1,
+                "name": "Cohort A",
+                "idnumber": "COH-A",
+                "description": "Science students",
+                "membercount": 42,
+                "membersurl": "/cohort/assign.php?id=1",
+                "enrolcount": 3,
+                "viewurl": "/local/cohort_manager/view.php?id=1"
+            }
+        ],
+        "pagination": "",
+        "usercohortsurl": "/local/cohort_manager/user.php",
+        "sort_name_url": "/local/cohort_manager/index.php?sort=name&dir=DESC",
+        "sort_idnumber_url": "/local/cohort_manager/index.php?sort=idnumber&dir=ASC",
+        "sort_membercount_url": "/local/cohort_manager/index.php?sort=membercount&dir=ASC",
+        "sort_enrolcount_url": "/local/cohort_manager/index.php?sort=enrolcount&dir=ASC",
+        "sort_name_icon": "<i class='icon fa fa-sort-asc'></i>",
+        "sort_idnumber_icon": "",
+        "sort_membercount_icon": "",
+        "sort_enrolcount_icon": "",
+        "sort_name_ariasort": "ascending",
+        "sort_idnumber_ariasort": "",
+        "sort_membercount_ariasort": "",
+        "sort_enrolcount_ariasort": ""
+    }
 }}
 <div class="local-cohort-manager-list">
     <div class="mb-3">
@@ -26,11 +61,9 @@
                    class="form-control"
                    placeholder="{{#str}}searchplaceholder, local_cohort_manager{{/str}}"
                    aria-label="{{#str}}searchplaceholder, local_cohort_manager{{/str}}">
-            <div class="input-group-append">
-                <button type="submit" class="btn btn-primary">
-                    {{#str}}search, local_cohort_manager{{/str}}
-                </button>
-            </div>
+            <button type="submit" class="btn btn-primary">
+                {{#str}}search, local_cohort_manager{{/str}}
+            </button>
         </div>
     </form>
 
@@ -38,27 +71,27 @@
     <table class="table table-striped table-hover generaltable">
         <thead>
             <tr>
-                <th>
+                <th {{#sort_name_ariasort}}aria-sort="{{.}}"{{/sort_name_ariasort}}>
                     <a href="{{sort_name_url}}">
-                        {{#str}}cohortname, local_cohort_manager{{/str}} {{sort_name_icon}}
+                        {{#str}}cohortname, local_cohort_manager{{/str}} {{{sort_name_icon}}}
                     </a>
                 </th>
-                <th>
+                <th {{#sort_idnumber_ariasort}}aria-sort="{{.}}"{{/sort_idnumber_ariasort}}>
                     <a href="{{sort_idnumber_url}}">
-                        {{#str}}cohortidnumber, local_cohort_manager{{/str}} {{sort_idnumber_icon}}
+                        {{#str}}cohortidnumber, local_cohort_manager{{/str}} {{{sort_idnumber_icon}}}
                     </a>
                 </th>
                 <th class="local-cohort-manager-desc-col">
                     {{#str}}description, local_cohort_manager{{/str}}
                 </th>
-                <th>
+                <th {{#sort_membercount_ariasort}}aria-sort="{{.}}"{{/sort_membercount_ariasort}}>
                     <a href="{{sort_membercount_url}}">
-                        {{#str}}membercount, local_cohort_manager{{/str}} {{sort_membercount_icon}}
+                        {{#str}}membercount, local_cohort_manager{{/str}} {{{sort_membercount_icon}}}
                     </a>
                 </th>
-                <th>
+                <th {{#sort_enrolcount_ariasort}}aria-sort="{{.}}"{{/sort_enrolcount_ariasort}}>
                     <a href="{{sort_enrolcount_url}}">
-                        {{#str}}enrolcount, local_cohort_manager{{/str}} {{sort_enrolcount_icon}}
+                        {{#str}}enrolcount, local_cohort_manager{{/str}} {{{sort_enrolcount_icon}}}
                     </a>
                 </th>
                 <th>{{#str}}actions, local_cohort_manager{{/str}}</th>
