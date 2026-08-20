@@ -1,0 +1,20 @@
+/* Inline forms in the enrolments table need width constraints. */
+.local-cohort-manager-detail .generaltable .form-inline .form-control-sm {
+    max-width: 200px;
+}
+
+/* Search input on the main page. */
+.local-cohort-manager-list .input-group {
+    max-width: 500px;
+}
+
+/* Description column in the cohort list table. */
+.local-cohort-manager-desc-col {
+    width: 30%;
+}
+.local-cohort-manager-desc-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
