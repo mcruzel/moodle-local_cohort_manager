@@ -37,7 +37,8 @@ or create those groups — individually or in bulk — without visiting each cou
 * List every `enrol_cohort` instance for the cohort, with its course and the
   group linked to that instance (if any).
 * Create a group for an enrolment instance that has none. The group is named
-  after the cohort and linked to the instance.
+  after the cohort, linked to the instance, and populated straight away with the
+  users the instance enrols.
 * Rename a single group.
 * Batch rename every group linked to the cohort's enrolment instances, in one
   database transaction.
@@ -153,9 +154,11 @@ reachable by CSRF.
 ## Notes and known limitations ##
 
 * Creating a group for an enrolment instance links the new group to that
-  instance (`enrol.customint2`). The plugin does not backfill group membership
-  for users who are already enrolled — that is left to the core `enrol_cohort`
-  synchronisation.
+  instance (`enrol.customint2`) and then runs the core `enrol_cohort`
+  synchronisation for the course, so users already enrolled by the instance
+  become members without waiting for cron. When the `cohort` enrolment plugin is
+  disabled, only `groups_sync_with_enrolment()` runs — a full sync would
+  unassign every `enrol_cohort` role.
 * Batch renaming gives every group linked to the cohort the same name. Moodle
   scopes group names per course, so this is valid, but it does mean two courses
   end up with identically named groups.
