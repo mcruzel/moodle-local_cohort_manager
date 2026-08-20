@@ -1,0 +1,170 @@
+{{!
+    @template local_cohort_manager/user_cohorts
+
+    User cohort management page: search user, view/add/remove cohort memberships.
+
+    Context variables required:
+    * searchurl - URL for user search form
+    * searchvalue - Current search term
+    * has_users - Boolean
+    * users - Array of: id, fullname, email, username, selecturl, selected
+    * has_selected_user - Boolean
+    * selected_user_id, selected_user_name, selected_user_email
+    * action_url - URL for useraction.php
+    * sesskey
+    * has_user_cohorts - Boolean
+    * user_cohorts - Array of: id, name, idnumber
+}}
+<div class="local-cohort-manager-user">
+
+    {{! User search }}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title m-0">{{#str}}searchuser, local_cohort_manager{{/str}}</h3>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{searchurl}}" class="mb-3">
+                <div class="input-group" style="max-width: 500px;">
+                    <input type="text" name="usersearch" value="{{searchvalue}}"
+                           class="form-control"
+                           placeholder="{{#str}}searchuserplaceholder, local_cohort_manager{{/str}}"
+                           aria-label="{{#str}}searchuserplaceholder, local_cohort_manager{{/str}}">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">
+                            {{#str}}search, local_cohort_manager{{/str}}
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {{#has_users}}
+            <table class="table table-striped table-hover generaltable">
+                <thead>
+                    <tr>
+                        <th>{{#str}}username, local_cohort_manager{{/str}}</th>
+                        <th>{{#str}}fullname, local_cohort_manager{{/str}}</th>
+                        <th>{{#str}}email, local_cohort_manager{{/str}}</th>
+                        <th>{{#str}}actions, local_cohort_manager{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#users}}
+                    <tr {{#selected}}class="table-primary"{{/selected}}>
+                        <td>{{username}}</td>
+                        <td>{{fullname}}</td>
+                        <td>{{email}}</td>
+                        <td>
+                            {{^selected}}
+                            <a href="{{selecturl}}" class="btn btn-sm btn-secondary">
+                                {{#str}}selectuser, local_cohort_manager{{/str}}
+                            </a>
+                            {{/selected}}
+                            {{#selected}}
+                            <span class="badge badge-primary">{{#str}}selecteduser, local_cohort_manager{{/str}}</span>
+                            {{/selected}}
+                        </td>
+                    </tr>
+                    {{/users}}
+                </tbody>
+            </table>
+            {{/has_users}}
+        </div>
+    </div>
+
+    {{! Selected user's cohorts }}
+    {{#has_selected_user}}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title m-0">
+                {{#str}}cohortsforuser, local_cohort_manager{{/str}} : {{selected_user_name}}
+                <small class="text-muted">({{selected_user_email}})</small>
+            </h3>
+        </div>
+        <div class="card-body">
+
+            {{! Add cohort form with AJAX autocomplete }}
+            <form method="post" action="{{action_url}}" class="form-inline mb-3">
+                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                <input type="hidden" name="action" value="addcohort">
+                <input type="hidden" name="userid" value="{{selected_user_id}}">
+                <label for="cohortid" class="mr-2">{{#str}}addtocohort, local_cohort_manager{{/str}}</label>
+                <div class="mr-2" style="min-width: 300px;">
+                    <select name="cohortid" id="cohortid" class="form-control"
+                            data-userid="{{selected_user_id}}">
+                        <option value="">{{#str}}selectcohort, local_cohort_manager{{/str}}</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    {{#str}}add, local_cohort_manager{{/str}}
+                </button>
+            </form>
+
+            {{#js}}
+            require(['core/form-autocomplete'], function(AutoComplete) {
+                AutoComplete.enhance(
+                    '#cohortid',
+                    false,
+                    'local_cohort_manager/cohort_selector',
+                    '{{#str}}searchcohortplaceholder, local_cohort_manager{{/str}}'
+                );
+            });
+            {{/js}}
+
+            {{! Current cohort memberships }}
+            <span class="d-none" id="removeConfirmMsg">{{#str}}removeconfirm, local_cohort_manager{{/str}}</span>
+
+            {{#has_user_cohorts}}
+            <table class="table table-striped generaltable">
+                <thead>
+                    <tr>
+                        <th>{{#str}}cohortname, local_cohort_manager{{/str}}</th>
+                        <th>{{#str}}cohortidnumber, local_cohort_manager{{/str}}</th>
+                        <th>{{#str}}actions, local_cohort_manager{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#user_cohorts}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{idnumber}}</td>
+                        <td>
+                            <form method="post" action="{{action_url}}" class="form-inline">
+                                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                <input type="hidden" name="action" value="removecohort">
+                                <input type="hidden" name="userid" value="{{selected_user_id}}">
+                                <input type="hidden" name="cohortid" value="{{id}}">
+                                <button type="submit" class="btn btn-sm btn-danger local-cohort-remove-btn">
+                                    {{#str}}remove, local_cohort_manager{{/str}}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/user_cohorts}}
+                </tbody>
+            </table>
+            {{/has_user_cohorts}}
+
+            {{^has_user_cohorts}}
+            <div class="alert alert-info">
+                {{#str}}usernomemberships, local_cohort_manager{{/str}}
+            </div>
+            {{/has_user_cohorts}}
+
+            {{#js}}
+            (function() {
+                var msgEl = document.getElementById('removeConfirmMsg');
+                if (msgEl) {
+                    document.querySelectorAll('.local-cohort-remove-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            if (!confirm(msgEl.textContent)) {
+                                e.preventDefault();
+                            }
+                        });
+                    });
+                }
+            })();
+            {{/js}}
+        </div>
+    </div>
+    {{/has_selected_user}}
+</div>
