@@ -1,0 +1,241 @@
+{{!
+    @template local_cohort_manager/cohort_detail
+
+    Displays cohort detail with rename forms and enrolment table.
+
+    Context variables required:
+    * cohort_id - The cohort ID
+    * cohort_name - The cohort name
+    * backurl - URL to go back to the cohort list
+    * action_url - URL for action.php POST
+    * sesskey - Session key for CSRF protection
+    * has_enrolments - Boolean
+    * enrolments - Array of: enrolid, courseid, course_fullname, course_shortname,
+                             enrolurl, groupid, groupname, has_group
+
+    Example context (json):
+    {
+        "cohort_id": 1,
+        "cohort_name": "Cohort A",
+        "backurl": "/local/cohort_manager/index.php",
+        "action_url": "/local/cohort_manager/action.php",
+        "sesskey": "abc123",
+        "has_enrolments": true,
+        "enrolments": [
+            {
+                "enrolid": 10,
+                "courseid": 5,
+                "course_fullname": "Mathematics",
+                "course_shortname": "MATH",
+                "enrolurl": "/enrol/instances.php?id=5",
+                "groupid": 3,
+                "groupname": "Group A",
+                "has_group": true
+            }
+        ]
+    }
+}}
+<div class="local-cohort-manager-detail">
+
+    {{! Back navigation }}
+    <div class="mb-3">
+        <a href="{{backurl}}" class="btn btn-link pl-0">
+            &laquo; {{#str}}backtocohortlist, local_cohort_manager{{/str}}
+        </a>
+    </div>
+
+    {{! Cohort rename section }}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title m-0">{{#str}}cohortnamesection, local_cohort_manager{{/str}}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{action_url}}">
+                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                <input type="hidden" name="action" value="renamecohort">
+                <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                <div class="form-inline">
+                    <label for="cohortname" class="sr-only">
+                        {{#str}}cohortname, local_cohort_manager{{/str}}
+                    </label>
+                    <input type="text" id="cohortname" name="cohortname"
+                           value="{{cohort_name}}" class="form-control mr-2" required>
+                    <button type="submit" class="btn btn-primary">
+                        {{#str}}renamecohort, local_cohort_manager{{/str}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{! Batch rename section }}
+    {{#has_enrolments}}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title m-0">{{#str}}batchrenamegroups, local_cohort_manager{{/str}}</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">{{#str}}batchrenamedesc, local_cohort_manager{{/str}}</p>
+            <form method="post" action="{{action_url}}">
+                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                <input type="hidden" name="action" value="batchrename">
+                <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                <div class="form-inline">
+                    <label for="batchgroupname" class="sr-only">
+                        {{#str}}newgroupname, local_cohort_manager{{/str}}
+                    </label>
+                    <input type="text" id="batchgroupname" name="batchgroupname"
+                           placeholder="{{#str}}newgroupname, local_cohort_manager{{/str}}"
+                           class="form-control mr-2" required>
+                    <span class="d-none" id="batchConfirmMsg">{{#str}}batchrenameconfirm, local_cohort_manager{{/str}}</span>
+                    <button type="submit" class="btn btn-warning" id="batchRenameBtn">
+                        {{#str}}batchrename, local_cohort_manager{{/str}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {{/has_enrolments}}
+
+    {{! Enrolments table }}
+    {{#has_enrolments}}
+    <h3>{{#str}}enrolledcourses, local_cohort_manager{{/str}}</h3>
+    <table class="table table-striped generaltable">
+        <thead>
+            <tr>
+                <th>{{#str}}coursename, local_cohort_manager{{/str}}</th>
+                <th>{{#str}}courseshortname, local_cohort_manager{{/str}}</th>
+                <th>{{#str}}groupname, local_cohort_manager{{/str}}</th>
+                <th>{{#str}}actions, local_cohort_manager{{/str}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#enrolments}}
+            <tr>
+                <td><a href="{{enrolurl}}">{{course_fullname}}</a></td>
+                <td>{{course_shortname}}</td>
+                <td>
+                    {{#has_group}}
+                        {{groupname}}
+                    {{/has_group}}
+                    {{^has_group}}
+                        <span class="text-muted font-italic">
+                            {{#str}}nogroup, local_cohort_manager{{/str}}
+                        </span>
+                    {{/has_group}}
+                </td>
+                <td>
+                    {{#has_group}}
+                    <form method="post" action="{{action_url}}" class="form-inline">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        <input type="hidden" name="action" value="renamegroup">
+                        <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                        <input type="hidden" name="groupid" value="{{groupid}}">
+                        <input type="text" name="groupname" value="{{groupname}}"
+                               class="form-control form-control-sm mr-1" required>
+                        <button type="submit" class="btn btn-sm btn-secondary">
+                            {{#str}}rename, local_cohort_manager{{/str}}
+                        </button>
+                    </form>
+                    {{/has_group}}
+                    {{^has_group}}
+                    <form method="post" action="{{action_url}}" class="form-inline">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        <input type="hidden" name="action" value="creategroup">
+                        <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                        <input type="hidden" name="enrolid" value="{{enrolid}}">
+                        <button type="submit" class="btn btn-sm btn-success">
+                            {{#str}}creategroup, local_cohort_manager{{/str}}
+                        </button>
+                    </form>
+                    {{/has_group}}
+                </td>
+            </tr>
+            {{/enrolments}}
+        </tbody>
+    </table>
+    {{/has_enrolments}}
+
+    {{^has_enrolments}}
+    <div class="alert alert-info">
+        {{#str}}noenrolments, local_cohort_manager{{/str}}
+    </div>
+    {{/has_enrolments}}
+
+    {{! Delete cohort section }}
+    <hr>
+    <div class="mt-4">
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+            {{#str}}deletecohort, local_cohort_manager{{/str}}
+        </button>
+    </div>
+
+    {{! Delete confirmation modal }}
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        {{#str}}deletecohort, local_cohort_manager{{/str}}
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="{{action_url}}" id="deleteCohortForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        <input type="hidden" name="action" value="deletecohort">
+                        <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                        <div class="alert alert-danger">
+                            {{#str}}deletewarning, local_cohort_manager{{/str}}
+                        </div>
+                        <p>{{#str}}deletetypename, local_cohort_manager{{/str}}</p>
+                        <p class="font-weight-bold">{{cohort_name}}</p>
+                        <div class="form-group">
+                            <input type="text" id="confirmname" name="confirmname"
+                                   class="form-control" autocomplete="off" required
+                                   placeholder="{{#str}}deletetypeplaceholder, local_cohort_manager{{/str}}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            {{#str}}cancel, local_cohort_manager{{/str}}
+                        </button>
+                        <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                            {{#str}}confirmdelete, local_cohort_manager{{/str}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{! Hidden element carrying the raw cohort name for JS comparison.
+         Using a data-attribute ensures proper encoding/decoding by the browser. }}
+    <span id="deleteExpectedName" data-name="{{cohort_name}}" class="d-none"></span>
+
+    {{! JS to enable delete button only when name matches, and handle batch rename confirm }}
+    {{#js}}
+    (function() {
+        // Delete confirmation: enable button only when typed name matches.
+        var input = document.getElementById('confirmname');
+        var btn = document.getElementById('confirmDeleteBtn');
+        var expected = document.getElementById('deleteExpectedName').getAttribute('data-name');
+        input.addEventListener('input', function() {
+            btn.disabled = (input.value.trim() !== expected);
+        });
+
+        // Batch rename confirmation (safe against apostrophes in lang strings).
+        var batchBtn = document.getElementById('batchRenameBtn');
+        if (batchBtn) {
+            batchBtn.addEventListener('click', function(e) {
+                var msg = document.getElementById('batchConfirmMsg').textContent;
+                if (!confirm(msg)) {
+                    e.preventDefault();
+                }
+            });
+        }
+    })();
+    {{/js}}
+</div>

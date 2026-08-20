@@ -1,0 +1,92 @@
+{{!
+    @template local_cohort_manager/cohort_list
+
+    Displays a searchable list of cohorts with description, member/enrolment counts, and sortable columns.
+
+    Context variables required:
+    * searchurl - URL for the search form action
+    * searchvalue - Current search term
+    * has_cohorts - Boolean, whether any cohorts were found
+    * cohorts - Array of: id, name, idnumber, description, membercount, membersurl, enrolcount, viewurl
+    * pagination - HTML for the paging bar (empty if only one page)
+    * usercohortsurl - URL to user cohort management page
+    * sort_name_url, sort_idnumber_url, sort_membercount_url, sort_enrolcount_url - Sort URLs
+    * sort_name_icon, sort_idnumber_icon, sort_membercount_icon, sort_enrolcount_icon - Sort direction indicators
+}}
+<div class="local-cohort-manager-list">
+    <div class="mb-3">
+        <a href="{{usercohortsurl}}" class="btn btn-outline-primary">
+            {{#str}}usercohorts, local_cohort_manager{{/str}}
+        </a>
+    </div>
+
+    <form method="get" action="{{searchurl}}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" value="{{searchvalue}}"
+                   class="form-control"
+                   placeholder="{{#str}}searchplaceholder, local_cohort_manager{{/str}}"
+                   aria-label="{{#str}}searchplaceholder, local_cohort_manager{{/str}}">
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-primary">
+                    {{#str}}search, local_cohort_manager{{/str}}
+                </button>
+            </div>
+        </div>
+    </form>
+
+    {{#has_cohorts}}
+    <table class="table table-striped table-hover generaltable">
+        <thead>
+            <tr>
+                <th>
+                    <a href="{{sort_name_url}}">
+                        {{#str}}cohortname, local_cohort_manager{{/str}} {{sort_name_icon}}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{sort_idnumber_url}}">
+                        {{#str}}cohortidnumber, local_cohort_manager{{/str}} {{sort_idnumber_icon}}
+                    </a>
+                </th>
+                <th class="local-cohort-manager-desc-col">
+                    {{#str}}description, local_cohort_manager{{/str}}
+                </th>
+                <th>
+                    <a href="{{sort_membercount_url}}">
+                        {{#str}}membercount, local_cohort_manager{{/str}} {{sort_membercount_icon}}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{sort_enrolcount_url}}">
+                        {{#str}}enrolcount, local_cohort_manager{{/str}} {{sort_enrolcount_icon}}
+                    </a>
+                </th>
+                <th>{{#str}}actions, local_cohort_manager{{/str}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#cohorts}}
+            <tr>
+                <td>{{name}}</td>
+                <td>{{idnumber}}</td>
+                <td class="local-cohort-manager-desc-cell">{{description}}</td>
+                <td><a href="{{membersurl}}">{{membercount}}</a></td>
+                <td>{{enrolcount}}</td>
+                <td>
+                    <a href="{{viewurl}}" class="btn btn-sm btn-secondary">
+                        {{#str}}viewdetails, local_cohort_manager{{/str}}
+                    </a>
+                </td>
+            </tr>
+            {{/cohorts}}
+        </tbody>
+    </table>
+    {{{pagination}}}
+    {{/has_cohorts}}
+
+    {{^has_cohorts}}
+    <div class="alert alert-info">
+        {{#str}}nocohortsfound, local_cohort_manager{{/str}}
+    </div>
+    {{/has_cohorts}}
+</div>
