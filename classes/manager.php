@@ -251,7 +251,9 @@ class manager {
     /**
      * Create a group for a cohort enrolment that has no group.
      *
-     * Creates a group named after the cohort and links it to the enrol instance.
+     * Creates a group named after the cohort, links it to the enrol instance and
+     * synchronises group membership so users already enrolled through that instance
+     * become members immediately.
      *
      * @param int $cohortid The cohort ID (used to get the group name).
      * @param int $enrolid The enrol instance ID to link the group to.
@@ -263,7 +265,11 @@ class manager {
         $cohort = self::get_cohort($cohortid);
         $enrol = $DB->get_record('enrol', ['id' => $enrolid, 'enrol' => 'cohort', 'customint1' => $cohortid], '*', MUST_EXIST);
 
-        if (!empty($enrol->customint2)) {
+        // Core does not clear customint2 when a group is deleted, so only a link pointing to a
+        // group that still exists in that course blocks the creation. A stale link is shown as
+        // "no group" by the detail page and must stay fixable from there.
+        if (!empty($enrol->customint2)
+                && $DB->record_exists('groups', ['id' => $enrol->customint2, 'courseid' => $enrol->courseid])) {
             throw new \moodle_exception('groupalreadyexists', 'local_cohort_manager');
         }
 
@@ -276,7 +282,37 @@ class manager {
         // Link the group to the enrol instance (single-field update to avoid overwriting concurrent changes).
         $DB->set_field('enrol', 'customint2', $groupid, ['id' => $enrolid]);
 
+        // Writing customint2 only records the link: the members enrolled by this instance are
+        // not group members yet, so without this the new group stays empty until cron runs the
+        // cohort sync. Populate it now, the same way enrol_cohort does when its own form is saved.
+        self::sync_enrolment_groups($enrol->courseid);
+
         return $groupid;
+    }
+
+    /**
+     * Synchronise cohort enrolments and group membership for a course.
+     *
+     * Mirrors what enrol_cohort_plugin::update_instance() does after a group is linked to a
+     * cohort enrolment instance, so that group membership reflects the cohort right away.
+     *
+     * @param int $courseid The course to synchronise.
+     */
+    private static function sync_enrolment_groups(int $courseid): void {
+        global $CFG;
+
+        if (!enrol_is_enabled('cohort')) {
+            // enrol_cohort_sync() unassigns every enrol_cohort role when the plugin is disabled,
+            // so only refresh the group membership of the already existing enrolments.
+            groups_sync_with_enrolment('cohort', $courseid);
+            return;
+        }
+
+        require_once($CFG->dirroot . '/enrol/cohort/locallib.php');
+
+        $trace = new \core\output\progress_trace\null_progress_trace();
+        enrol_cohort_sync($trace, $courseid);
+        $trace->finished();
     }
 
     /**
