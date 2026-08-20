@@ -13,7 +13,7 @@
     * action_url - URL for useraction.php
     * sesskey
     * has_user_cohorts - Boolean
-    * user_cohorts - Array of: id, name, idnumber
+    * user_cohorts - Array of: id, name, idnumber, is_component_managed
 
     Example context (json):
     {
@@ -41,7 +41,8 @@
             {
                 "id": 1,
                 "name": "Cohort A",
-                "idnumber": "COH-A"
+                "idnumber": "COH-A",
+                "is_component_managed": false
             }
         ]
     }
@@ -157,6 +158,7 @@
                         <td>{{name}}</td>
                         <td>{{idnumber}}</td>
                         <td>
+                            {{^is_component_managed}}
                             <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
                                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                                 <input type="hidden" name="action" value="removecohort">
@@ -166,6 +168,10 @@
                                     {{#str}}remove, local_cohort_manager{{/str}}
                                 </button>
                             </form>
+                            {{/is_component_managed}}
+                            {{#is_component_managed}}
+                            <span class="text-muted">{{#str}}componentmanagedshort, local_cohort_manager{{/str}}</span>
+                            {{/is_component_managed}}
                         </td>
                     </tr>
                     {{/user_cohorts}}

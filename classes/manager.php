@@ -389,7 +389,7 @@ class manager {
     public static function get_user_cohorts(int $userid): array {
         global $DB;
 
-        $sql = "SELECT c.id, c.name, c.idnumber
+        $sql = "SELECT c.id, c.name, c.idnumber, c.component
                   FROM {cohort} c
                   JOIN {cohort_members} cm ON cm.cohortid = c.id
                  WHERE cm.userid = :userid
@@ -417,17 +417,21 @@ class manager {
         $likename = $DB->sql_like('c.name', ':name', false);
         $likeid = $DB->sql_like('c.idnumber', ':idnumber', false);
 
+        // Cohorts managed by another component cannot be joined through this plugin,
+        // so do not offer them in the autocomplete.
         $sql = "SELECT c.id, c.name, c.idnumber
                   FROM {cohort} c
                  WHERE ({$likename} OR {$likeid})
+                   AND c.component = :emptycomponent
                    AND c.id NOT IN (
                        SELECT cm.cohortid FROM {cohort_members} cm WHERE cm.userid = :userid
                    )
               ORDER BY c.name ASC";
         $params = [
-            'name'     => '%' . $DB->sql_like_escape($query) . '%',
-            'idnumber' => '%' . $DB->sql_like_escape($query) . '%',
-            'userid'   => $userid,
+            'name'           => '%' . $DB->sql_like_escape($query) . '%',
+            'idnumber'       => '%' . $DB->sql_like_escape($query) . '%',
+            'emptycomponent' => '',
+            'userid'         => $userid,
         ];
 
         $records = $DB->get_records_sql($sql, $params, 0, $limit);

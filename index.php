@@ -64,10 +64,12 @@ $data = [
     'cohorts'     => array_values(array_map(function($cohort) use ($context) {
         return [
             'id'          => $cohort->id,
-            'name'        => format_string($cohort->name, true, ['context' => $context]),
+            // Mustache escapes {{ }} output itself, so ask format_string/content_to_text
+            // for unescaped values to avoid double-encoded entities.
+            'name'        => format_string($cohort->name, true, ['context' => $context, 'escape' => false]),
             'idnumber'    => $cohort->idnumber,
-            'description' => strip_tags(format_text($cohort->description ?? '',
-                $cohort->descriptionformat ?? FORMAT_HTML, ['context' => $context])),
+            'description' => content_to_text(format_text($cohort->description ?? '',
+                $cohort->descriptionformat ?? FORMAT_HTML, ['context' => $context]), false),
             'membercount' => (int)$cohort->membercount,
             'membersurl'  => (new moodle_url('/cohort/assign.php', ['id' => $cohort->id]))->out(false),
             'enrolcount'  => (int)$cohort->enrolcount,

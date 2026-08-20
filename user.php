@@ -89,6 +89,7 @@ $data = [
             'id'       => $c->id,
             'name'     => $c->name,
             'idnumber' => $c->idnumber,
+            'is_component_managed' => !empty($c->component),
         ];
     }, $usercohorts)),
 ];

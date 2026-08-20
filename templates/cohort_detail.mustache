@@ -7,6 +7,8 @@
     * cohort_id - The cohort ID
     * cohort_name - The cohort name (formatted for display)
     * cohort_name_raw - The raw cohort name (for the rename input and delete confirmation)
+    * is_component_managed - Boolean, true when the cohort is owned by another component
+                             (rename and delete are then hidden)
     * backurl - URL to go back to the cohort list
     * action_url - URL for action.php POST
     * sesskey - Session key for CSRF protection
@@ -19,6 +21,7 @@
         "cohort_id": 1,
         "cohort_name": "Cohort A",
         "cohort_name_raw": "Cohort A",
+        "is_component_managed": false,
         "backurl": "/local/cohort_manager/index.php",
         "action_url": "/local/cohort_manager/action.php",
         "sesskey": "abc123",
@@ -46,6 +49,13 @@
         </a>
     </div>
 
+    {{#is_component_managed}}
+    <div class="alert alert-info">
+        {{#str}}componentmanagednotice, local_cohort_manager{{/str}}
+    </div>
+    {{/is_component_managed}}
+
+    {{^is_component_managed}}
     {{! Cohort rename section }}
     <div class="card mb-4">
         <div class="card-header">
@@ -69,6 +79,7 @@
             </form>
         </div>
     </div>
+    {{/is_component_managed}}
 
     {{! Batch rename section }}
     {{#has_enrolments}}
@@ -164,6 +175,7 @@
     </div>
     {{/has_enrolments}}
 
+    {{^is_component_managed}}
     {{! Delete cohort section }}
     <hr>
     <div class="mt-4">
@@ -215,17 +227,22 @@
     {{! Hidden element carrying the raw cohort name for JS comparison.
          Using a data-attribute ensures proper encoding/decoding by the browser. }}
     <span id="deleteExpectedName" data-name="{{cohort_name_raw}}" class="d-none"></span>
+    {{/is_component_managed}}
 
     {{! JS to enable delete button only when name matches, and handle batch rename confirm }}
     {{#js}}
     (function() {
         // Delete confirmation: enable button only when typed name matches.
+        // These elements are absent for component-managed cohorts.
         var input = document.getElementById('confirmname');
         var btn = document.getElementById('confirmDeleteBtn');
-        var expected = document.getElementById('deleteExpectedName').getAttribute('data-name');
-        input.addEventListener('input', function() {
-            btn.disabled = (input.value.trim() !== expected);
-        });
+        var expectedholder = document.getElementById('deleteExpectedName');
+        if (input && btn && expectedholder) {
+            var expected = expectedholder.getAttribute('data-name');
+            input.addEventListener('input', function() {
+                btn.disabled = (input.value.trim() !== expected);
+            });
+        }
 
         // Batch rename confirmation (safe against apostrophes in lang strings).
         var batchBtn = document.getElementById('batchRenameBtn');

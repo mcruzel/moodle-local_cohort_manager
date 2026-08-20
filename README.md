@@ -1,6 +1,6 @@
 # Cohort Manager #
 
-[![Moodle 4.1+](https://img.shields.io/badge/Moodle-4.1%2B-orange)](https://moodle.org)
+[![Moodle 5.0 – 5.2](https://img.shields.io/badge/Moodle-5.0%E2%80%935.2-orange)](https://moodle.org)
 [![Licence GPL v3+](https://img.shields.io/badge/licence-GPL%20v3%2B-blue)](https://www.gnu.org/licenses/gpl-3.0)
 
 A Moodle local plugin that gives site managers a single place to audit and
@@ -57,7 +57,7 @@ The plugin defines no database tables of its own. It reads and writes core
 
 ## Requirements ##
 
-* Moodle 4.1 (build 2022112800) or later.
+* Moodle 5.0 (build 2025041400) to Moodle 5.2 — the interface relies on Bootstrap 5, shipped with Moodle since 5.0. Since Moodle 5.1 the plugin installs under `public/local/cohort_manager`.
 * No additional PHP extensions or external services.
 
 ## Installing via uploaded ZIP file ##
