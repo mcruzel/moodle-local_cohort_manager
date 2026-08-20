@@ -70,8 +70,12 @@ switch ($action) {
         try {
             \local_cohort_manager\manager::delete_cohort($cohortid, $confirmname);
         } catch (\moodle_exception $e) {
-            redirect($returnurl, get_string('deletenamenotmatch', 'local_cohort_manager'), null,
-                \core\output\notification::NOTIFY_ERROR);
+            // Keep the specific "name does not match" message for that error only;
+            // other errors (e.g. a cohort managed by another component) keep their own.
+            $message = $e->errorcode === 'deletenamenotmatch'
+                ? get_string('deletenamenotmatch', 'local_cohort_manager')
+                : $e->getMessage();
+            redirect($returnurl, $message, null, \core\output\notification::NOTIFY_ERROR);
         }
         $listurl = new moodle_url('/local/cohort_manager/index.php');
         redirect($listurl, get_string('cohortdeleted', 'local_cohort_manager'), null,

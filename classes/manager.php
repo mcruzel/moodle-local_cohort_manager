@@ -26,6 +26,7 @@ namespace local_cohort_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once($CFG->dirroot . '/cohort/lib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
@@ -105,7 +106,7 @@ class manager {
         }
         $dir = strtoupper($dir) === 'DESC' ? 'DESC' : 'ASC';
 
-        $sql = "SELECT c.id, c.name, c.idnumber, c.description,
+        $sql = "SELECT c.id, c.name, c.idnumber, c.description, c.descriptionformat,
                        (SELECT COUNT(*)
                           FROM {enrol} e
                          WHERE e.enrol = 'cohort'
@@ -135,6 +136,21 @@ class manager {
             throw new \moodle_exception('cohortnotfound', 'local_cohort_manager');
         }
         return $cohort;
+    }
+
+    /**
+     * Ensure a cohort is not managed by an external component.
+     *
+     * Cohorts created by another component (e.g. an enrolment or sync plugin)
+     * must not be modified or deleted through this plugin.
+     *
+     * @param \stdClass $cohort The cohort record.
+     * @throws \moodle_exception If the cohort is managed by another component.
+     */
+    private static function require_not_component_managed(\stdClass $cohort): void {
+        if (!empty($cohort->component)) {
+            throw new \moodle_exception('cannotmanagecohort', 'local_cohort_manager', '', $cohort->component);
+        }
     }
 
     /**
@@ -169,6 +185,7 @@ class manager {
      */
     public static function rename_cohort(int $cohortid, string $newname): void {
         $cohort = self::get_cohort($cohortid);
+        self::require_not_component_managed($cohort);
 
         $newname = trim($newname);
         if ($newname === '') {
@@ -194,6 +211,7 @@ class manager {
      */
     public static function delete_cohort(int $cohortid, string $confirmname): void {
         $cohort = self::get_cohort($cohortid);
+        self::require_not_component_managed($cohort);
 
         if (trim($confirmname) !== $cohort->name) {
             throw new \moodle_exception('deletenamenotmatch', 'local_cohort_manager');
@@ -323,10 +341,10 @@ class manager {
      * @param string $search Search term.
      * @param int $page Page number (0-based).
      * @param int $perpage Results per page.
-     * @return array Array of user records (id, firstname, lastname, email, username).
+     * @return array Array of user records (id, email, username and all name fields).
      */
     public static function search_users(string $search, int $page = 0, int $perpage = self::COHORTS_PER_PAGE): array {
-        global $DB;
+        global $CFG, $DB;
 
         $page = max(0, $page);
         $perpage = min(max(1, $perpage), self::COHORTS_PER_PAGE);
@@ -341,14 +359,19 @@ class manager {
         $likeemail = $DB->sql_like('email', ':email', false);
         $likeuser = $DB->sql_like('username', ':username', false);
 
-        $sql = "SELECT id, firstname, lastname, email, username
+        // Select all name fields so fullname() can honour the site's fullname display settings.
+        $namefields = \core_user\fields::for_name()->get_required_fields();
+        $fields = implode(', ', array_unique(array_merge(['id', 'email', 'username'], $namefields)));
+
+        $sql = "SELECT {$fields}
                   FROM {user}
                  WHERE deleted = 0
                    AND suspended = 0
-                   AND id > 1
+                   AND id <> :guestid
                    AND ({$likefull} OR {$likeemail} OR {$likeuser})
               ORDER BY lastname ASC, firstname ASC";
         $params = [
+            'guestid'  => $CFG->siteguest,
             'fullname' => '%' . $DB->sql_like_escape($search) . '%',
             'email'    => '%' . $DB->sql_like_escape($search) . '%',
             'username' => '%' . $DB->sql_like_escape($search) . '%',
@@ -366,7 +389,7 @@ class manager {
     public static function get_user_cohorts(int $userid): array {
         global $DB;
 
-        $sql = "SELECT c.id, c.name, c.idnumber
+        $sql = "SELECT c.id, c.name, c.idnumber, c.component
                   FROM {cohort} c
                   JOIN {cohort_members} cm ON cm.cohortid = c.id
                  WHERE cm.userid = :userid
@@ -394,17 +417,21 @@ class manager {
         $likename = $DB->sql_like('c.name', ':name', false);
         $likeid = $DB->sql_like('c.idnumber', ':idnumber', false);
 
+        // Cohorts managed by another component cannot be joined through this plugin,
+        // so do not offer them in the autocomplete.
         $sql = "SELECT c.id, c.name, c.idnumber
                   FROM {cohort} c
                  WHERE ({$likename} OR {$likeid})
+                   AND c.component = :emptycomponent
                    AND c.id NOT IN (
                        SELECT cm.cohortid FROM {cohort_members} cm WHERE cm.userid = :userid
                    )
               ORDER BY c.name ASC";
         $params = [
-            'name'     => '%' . $DB->sql_like_escape($query) . '%',
-            'idnumber' => '%' . $DB->sql_like_escape($query) . '%',
-            'userid'   => $userid,
+            'name'           => '%' . $DB->sql_like_escape($query) . '%',
+            'idnumber'       => '%' . $DB->sql_like_escape($query) . '%',
+            'emptycomponent' => '',
+            'userid'         => $userid,
         ];
 
         $records = $DB->get_records_sql($sql, $params, 0, $limit);
@@ -428,6 +455,9 @@ class manager {
      * @param int $userid The user ID.
      */
     public static function add_user_to_cohort(int $cohortid, int $userid): void {
+        $cohort = self::get_cohort($cohortid);
+        self::require_not_component_managed($cohort);
+
         cohort_add_member($cohortid, $userid);
     }
 
@@ -438,6 +468,9 @@ class manager {
      * @param int $userid The user ID.
      */
     public static function remove_user_from_cohort(int $cohortid, int $userid): void {
+        $cohort = self::get_cohort($cohortid);
+        self::require_not_component_managed($cohort);
+
         cohort_remove_member($cohortid, $userid);
     }
 }

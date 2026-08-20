@@ -37,19 +37,26 @@ $PAGE->set_pagelayout('admin');
 $cohort = \local_cohort_manager\manager::get_cohort($cohortid);
 $enrolments = \local_cohort_manager\manager::get_cohort_enrolments($cohortid);
 
-$PAGE->set_title(format_string($cohort->name) . ' - ' . get_string('pluginname', 'local_cohort_manager'));
-$PAGE->set_heading(format_string($cohort->name));
+// Escaped variant for page chrome (title, heading, navbar) which is output raw,
+// unescaped variant for the template where Mustache escapes {{ }} itself.
+$cohortname = format_string($cohort->name, true, ['context' => $context]);
+$cohortnameplain = format_string($cohort->name, true, ['context' => $context, 'escape' => false]);
+
+$PAGE->set_title($cohortname . ' - ' . get_string('pluginname', 'local_cohort_manager'));
+$PAGE->set_heading($cohortname);
 $PAGE->navbar->add(
     get_string('pluginname', 'local_cohort_manager'),
     new moodle_url('/local/cohort_manager/index.php')
 );
-$PAGE->navbar->add(format_string($cohort->name));
+$PAGE->navbar->add($cohortname);
 
 $actionurl = (new moodle_url('/local/cohort_manager/action.php'))->out(false);
 
 $data = [
-    'cohort_id'      => $cohort->id,
-    'cohort_name'    => $cohort->name,
+    'cohort_id'       => $cohort->id,
+    'cohort_name'     => $cohortnameplain,
+    'cohort_name_raw' => $cohort->name,
+    'is_component_managed' => !empty($cohort->component),
     'backurl'        => (new moodle_url('/local/cohort_manager/index.php'))->out(false),
     'action_url'     => $actionurl,
     'sesskey'        => sesskey(),
