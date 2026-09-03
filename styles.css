@@ -28,3 +28,9 @@
 .local-cohort-manager-user .local-cohort-manager-cohort-select {
     min-width: 300px;
 }
+
+/* Cohort restriction filter, combined with the autocomplete above. */
+.local-cohort-manager-user .local-cohort-manager-cohort-restrict {
+    min-width: 200px;
+    max-width: 250px;
+}

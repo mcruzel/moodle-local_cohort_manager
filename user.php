@@ -69,12 +69,13 @@ $data = [
     'has_users'    => !empty($users),
     'users'        => array_values(array_map(function($u) use ($userid) {
         return [
-            'id'        => $u->id,
-            'fullname'  => fullname($u),
-            'email'     => $u->email,
-            'username'  => $u->username,
-            'selecturl' => (new moodle_url('/local/cohort_manager/user.php', ['userid' => $u->id]))->out(false),
-            'selected'  => ($u->id == $userid),
+            'id'         => $u->id,
+            'fullname'   => fullname($u),
+            'email'      => $u->email,
+            'username'   => $u->username,
+            'profileurl' => (new moodle_url('/user/profile.php', ['id' => $u->id]))->out(false),
+            'selecturl'  => (new moodle_url('/local/cohort_manager/user.php', ['userid' => $u->id]))->out(false),
+            'selected'   => ($u->id == $userid),
         ];
     }, $users)),
     'has_selected_user'  => !empty($selecteduser),

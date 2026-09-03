@@ -28,6 +28,10 @@ define(['core/ajax'], function(Ajax) {
         /**
          * Fetch results from the web service.
          *
+         * The select element carries a data-restrict attribute, kept in sync by the page with a
+         * second, persistent filter field (e.g. a promotion year). It is sent together with the
+         * typed query so the two narrow the results down cumulatively.
+         *
          * @param {string} selector The select element selector.
          * @param {string} query The search query.
          * @param {Function} success Callback on success.
@@ -36,9 +40,10 @@ define(['core/ajax'], function(Ajax) {
         transport: function(selector, query, success, failure) {
             var el = document.querySelector(selector);
             var userid = el.getAttribute('data-userid');
+            var restrict = el.getAttribute('data-restrict') || '';
             var promises = Ajax.call([{
                 methodname: 'local_cohort_manager_search_available_cohorts',
-                args: {userid: parseInt(userid), query: query}
+                args: {userid: parseInt(userid), query: query, restrict: restrict}
             }]);
             promises[0].then(success).catch(failure);
         }
