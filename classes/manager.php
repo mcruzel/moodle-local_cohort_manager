@@ -439,10 +439,13 @@ class manager {
      *
      * @param int $userid The user ID.
      * @param string $query Search query (name or idnumber).
+     * @param string $restrict Additional filter (name or idnumber) applied together with $query,
+     *                         e.g. to narrow results down to a given promotion year.
      * @param int $limit Maximum number of results.
      * @return array Array of ['id' => int, 'name' => string].
      */
-    public static function search_available_cohorts_for_user(int $userid, string $query, int $limit = 20): array {
+    public static function search_available_cohorts_for_user(
+            int $userid, string $query, string $restrict = '', int $limit = 20): array {
         global $DB;
 
         $query = trim($query);
@@ -455,20 +458,31 @@ class manager {
 
         // Cohorts managed by another component cannot be joined through this plugin,
         // so do not offer them in the autocomplete.
-        $sql = "SELECT c.id, c.name, c.idnumber
-                  FROM {cohort} c
-                 WHERE ({$likename} OR {$likeid})
+        $where = "WHERE ({$likename} OR {$likeid})
                    AND c.component = :emptycomponent
                    AND c.id NOT IN (
                        SELECT cm.cohortid FROM {cohort_members} cm WHERE cm.userid = :userid
-                   )
-              ORDER BY c.name ASC";
+                   )";
         $params = [
             'name'           => '%' . $DB->sql_like_escape($query) . '%',
             'idnumber'       => '%' . $DB->sql_like_escape($query) . '%',
             'emptycomponent' => '',
             'userid'         => $userid,
         ];
+
+        $restrict = trim($restrict);
+        if ($restrict !== '') {
+            $likerestrictname = $DB->sql_like('c.name', ':restrictname', false);
+            $likerestrictid = $DB->sql_like('c.idnumber', ':restrictid', false);
+            $where .= " AND ({$likerestrictname} OR {$likerestrictid})";
+            $params['restrictname'] = '%' . $DB->sql_like_escape($restrict) . '%';
+            $params['restrictid'] = '%' . $DB->sql_like_escape($restrict) . '%';
+        }
+
+        $sql = "SELECT c.id, c.name, c.idnumber
+                  FROM {cohort} c
+                 {$where}
+              ORDER BY c.name ASC";
 
         $records = $DB->get_records_sql($sql, $params, 0, $limit);
 

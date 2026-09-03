@@ -7,7 +7,7 @@
     * searchurl - URL for user search form
     * searchvalue - Current search term
     * has_users - Boolean
-    * users - Array of: id, fullname, email, username, selecturl, selected
+    * users - Array of: id, fullname, email, username, profileurl, selecturl, selected
     * has_selected_user - Boolean
     * selected_user_id, selected_user_name, selected_user_email
     * action_url - URL for useraction.php
@@ -26,6 +26,7 @@
                 "fullname": "John Smith",
                 "email": "john.smith@example.com",
                 "username": "jsmith",
+                "profileurl": "/user/profile.php?id=12",
                 "selecturl": "/local/cohort_manager/user.php?userid=12",
                 "selected": true
             }
@@ -80,7 +81,7 @@
                 <tbody>
                     {{#users}}
                     <tr {{#selected}}class="table-primary"{{/selected}}>
-                        <td>{{username}}</td>
+                        <td><a href="{{profileurl}}">{{username}}</a></td>
                         <td>{{fullname}}</td>
                         <td>{{email}}</td>
                         <td>
@@ -118,9 +119,14 @@
                 <input type="hidden" name="action" value="addcohort">
                 <input type="hidden" name="userid" value="{{selected_user_id}}">
                 <label for="cohortid" class="me-2">{{#str}}addtocohort, local_cohort_manager{{/str}}</label>
+                <div class="me-2 local-cohort-manager-cohort-restrict">
+                    <input type="text" id="cohortrestrict" class="form-control"
+                           placeholder="{{#str}}restrictcohortplaceholder, local_cohort_manager{{/str}}"
+                           aria-label="{{#str}}restrictcohortsearch, local_cohort_manager{{/str}}">
+                </div>
                 <div class="me-2 local-cohort-manager-cohort-select">
                     <select name="cohortid" id="cohortid" class="form-control"
-                            data-userid="{{selected_user_id}}">
+                            data-userid="{{selected_user_id}}" data-restrict="">
                         <option value="">{{#str}}selectcohort, local_cohort_manager{{/str}}</option>
                     </select>
                 </div>
@@ -138,6 +144,18 @@
                     {{#quote}}{{#str}}searchcohortplaceholder, local_cohort_manager{{/str}}{{/quote}}
                 );
             });
+            {{/js}}
+
+            {{#js}}
+            (function() {
+                var restrictEl = document.getElementById('cohortrestrict');
+                var cohortSelect = document.getElementById('cohortid');
+                if (restrictEl && cohortSelect) {
+                    restrictEl.addEventListener('input', function() {
+                        cohortSelect.setAttribute('data-restrict', restrictEl.value);
+                    });
+                }
+            })();
             {{/js}}
 
             {{! Current cohort memberships }}

@@ -45,10 +45,15 @@ or create those groups — individually or in bulk — without visiting each cou
 
 **User memberships** (`user.php`)
 
-* Search users by name, email or username.
+* Search users by name, email or username. Each result's username links to
+  the user's profile page.
 * Review the cohorts a selected user belongs to.
 * Add the user to a cohort — the cohort picker is an AJAX autocomplete that
-  only offers cohorts the user is not already a member of.
+  only offers cohorts the user is not already a member of. A second,
+  persistent filter field sits next to it and narrows those results down
+  further, cumulatively with whatever is typed into the autocomplete — for
+  example, entering a promotion year there restricts the autocomplete to
+  cohorts whose name or ID number also matches that year.
 * Remove the user from a cohort.
 
 The plugin defines no database tables of its own. It reads and writes core

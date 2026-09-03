@@ -44,8 +44,11 @@ class search_available_cohorts extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'userid' => new external_value(PARAM_INT, 'The user ID'),
-            'query'  => new external_value(PARAM_TEXT, 'Search query string'),
+            'userid'   => new external_value(PARAM_INT, 'The user ID'),
+            'query'    => new external_value(PARAM_TEXT, 'Search query string'),
+            'restrict' => new external_value(
+                PARAM_TEXT, 'Additional filter applied together with the query', VALUE_DEFAULT, ''
+            ),
         ]);
     }
 
@@ -54,12 +57,14 @@ class search_available_cohorts extends external_api {
      *
      * @param int $userid The user ID.
      * @param string $query The search query.
+     * @param string $restrict Additional filter applied together with the query.
      * @return array Array of cohort results.
      */
-    public static function execute(int $userid, string $query): array {
+    public static function execute(int $userid, string $query, string $restrict = ''): array {
         $params = self::validate_parameters(self::execute_parameters(), [
-            'userid' => $userid,
-            'query'  => $query,
+            'userid'   => $userid,
+            'query'    => $query,
+            'restrict' => $restrict,
         ]);
 
         $context = \context_system::instance();
@@ -67,7 +72,7 @@ class search_available_cohorts extends external_api {
         require_capability('local/cohort_manager:manage', $context);
 
         return \local_cohort_manager\manager::search_available_cohorts_for_user(
-            $params['userid'], $params['query']
+            $params['userid'], $params['query'], $params['restrict']
         );
     }
 
