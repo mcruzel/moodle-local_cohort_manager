@@ -3,9 +3,14 @@
     max-width: 200px;
 }
 
-/* Search input on the main page. */
+/* Search input group on the main page: search term plus its restriction filter. */
 .local-cohort-manager-list .input-group {
-    max-width: 500px;
+    max-width: 720px;
+}
+
+/* Restriction filter, combined with the search term next to it. */
+.local-cohort-manager-list .local-cohort-manager-list-restrict {
+    max-width: 220px;
 }
 
 /* Description column in the cohort list table. */

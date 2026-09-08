@@ -22,7 +22,11 @@ or create those groups — individually or in bulk — without visiting each cou
 
 **Cohort list** (`index.php`)
 
-* Search cohorts by name, ID number or description.
+* Search cohorts by name, ID number or description. A second filter field sits
+  next to the search box and narrows those results down further, cumulatively
+  with the search term — for example, entering a promotion year there keeps only
+  the cohorts whose name, ID number or description also matches that year. Both
+  terms are carried over by the sort links and the paging bar.
 * Sort by name, ID number, member count or enrolment count.
 * Paginated, 50 cohorts per page.
 * Shows, for each cohort, its number of members and the number of course
