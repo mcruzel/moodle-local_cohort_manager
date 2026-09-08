@@ -44,40 +44,57 @@ class manager {
     /**
      * Build the WHERE clause and params for cohort search.
      *
+     * The two terms are matched against the same columns and combined with AND, so the
+     * restriction narrows down the search results instead of widening them.
+     *
      * @param string $search Search term.
+     * @param string $restrict Additional filter applied together with $search.
      * @return array [$where, $params] where $where is '' or 'WHERE ...'
      */
-    private static function search_cohorts_where(string $search): array {
+    private static function search_cohorts_where(string $search, string $restrict = ''): array {
         global $DB;
 
-        if (trim($search) === '') {
+        $clauses = [];
+        $params = [];
+
+        foreach (['search' => $search, 'restrict' => $restrict] as $prefix => $term) {
+            $term = trim($term);
+            if ($term === '') {
+                continue;
+            }
+
+            // Prefix the placeholders so the two terms do not collide when both are given.
+            $likename = $DB->sql_like('c.name', ":{$prefix}name", false);
+            $likeid = $DB->sql_like('c.idnumber', ":{$prefix}idnumber", false);
+            $likedesc = $DB->sql_like('c.description', ":{$prefix}description", false);
+
+            $clauses[] = "({$likename} OR {$likeid} OR {$likedesc})";
+
+            $pattern = '%' . $DB->sql_like_escape($term) . '%';
+            $params["{$prefix}name"] = $pattern;
+            $params["{$prefix}idnumber"] = $pattern;
+            $params["{$prefix}description"] = $pattern;
+        }
+
+        if (empty($clauses)) {
             return ['', []];
         }
 
-        $likename = $DB->sql_like('c.name', ':name', false);
-        $likeid = $DB->sql_like('c.idnumber', ':idnumber', false);
-        $likedesc = $DB->sql_like('c.description', ':description', false);
-
-        $where = "WHERE ({$likename} OR {$likeid} OR {$likedesc})";
-        $params = [
-            'name'        => '%' . $DB->sql_like_escape($search) . '%',
-            'idnumber'    => '%' . $DB->sql_like_escape($search) . '%',
-            'description' => '%' . $DB->sql_like_escape($search) . '%',
-        ];
-
-        return [$where, $params];
+        return ['WHERE ' . implode(' AND ', $clauses), $params];
     }
 
     /**
      * Count cohorts matching a search term.
      *
      * @param string $search Search term (empty string counts all cohorts).
+     * @param string $restrict Additional filter (name, idnumber or description) applied
+     *                         together with $search.
      * @return int Total number of matching cohorts.
      */
-    public static function count_cohorts(string $search = ''): int {
+    public static function count_cohorts(string $search = '', string $restrict = ''): int {
         global $DB;
 
-        [$where, $params] = self::search_cohorts_where($search);
+        [$where, $params] = self::search_cohorts_where($search, $restrict);
         return $DB->count_records_sql("SELECT COUNT(*) FROM {cohort} c {$where}", $params);
     }
 
@@ -89,16 +106,19 @@ class manager {
      * @param int $perpage Number of results per page.
      * @param string $sort Column to sort by (name, idnumber, enrolcount).
      * @param string $dir Sort direction (ASC or DESC).
+     * @param string $restrict Additional filter (name, idnumber or description) applied
+     *                         together with $search, e.g. to narrow results down to a
+     *                         given promotion year.
      * @return array Array of cohort records with enrolcount field.
      */
     public static function search_cohorts(string $search = '', int $page = 0, int $perpage = self::COHORTS_PER_PAGE,
-            string $sort = 'name', string $dir = 'ASC'): array {
+            string $sort = 'name', string $dir = 'ASC', string $restrict = ''): array {
         global $DB;
 
         $page = max(0, $page);
         $perpage = min(max(1, $perpage), self::COHORTS_PER_PAGE);
 
-        [$where, $params] = self::search_cohorts_where($search);
+        [$where, $params] = self::search_cohorts_where($search, $restrict);
 
         // Validate sort parameters.
         if (!in_array($sort, self::SORT_COLUMNS)) {

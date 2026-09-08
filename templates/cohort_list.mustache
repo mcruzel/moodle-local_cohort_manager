@@ -6,6 +6,7 @@
     Context variables required:
     * searchurl - URL for the search form action
     * searchvalue - Current search term
+    * restrictvalue - Current restriction term, applied cumulatively with the search term
     * has_cohorts - Boolean, whether any cohorts were found
     * cohorts - Array of: id, name, idnumber, description, membercount, membersurl, enrolcount, viewurl
     * pagination - HTML for the paging bar (empty if only one page)
@@ -19,6 +20,7 @@
     {
         "searchurl": "/local/cohort_manager/index.php",
         "searchvalue": "science",
+        "restrictvalue": "2026",
         "has_cohorts": true,
         "cohorts": [
             {
@@ -61,6 +63,10 @@
                    class="form-control"
                    placeholder="{{#str}}searchplaceholder, local_cohort_manager{{/str}}"
                    aria-label="{{#str}}searchplaceholder, local_cohort_manager{{/str}}">
+            <input type="text" name="restrict" value="{{restrictvalue}}"
+                   class="form-control local-cohort-manager-list-restrict"
+                   placeholder="{{#str}}restrictcohortplaceholder, local_cohort_manager{{/str}}"
+                   aria-label="{{#str}}restrictcohortsearch, local_cohort_manager{{/str}}">
             <button type="submit" class="btn btn-primary">
                 {{#str}}search, local_cohort_manager{{/str}}
             </button>

@@ -28,13 +28,15 @@ require_login();
 $context = context_system::instance();
 require_capability('local/cohort_manager:manage', $context);
 
-$search  = optional_param('search', '', PARAM_TEXT);
-$page    = optional_param('page', 0, PARAM_INT);
-$sort    = optional_param('sort', 'name', PARAM_ALPHA);
-$dir     = optional_param('dir', 'ASC', PARAM_ALPHA);
-$perpage = \local_cohort_manager\manager::COHORTS_PER_PAGE;
+$search   = optional_param('search', '', PARAM_TEXT);
+$restrict = optional_param('restrict', '', PARAM_TEXT);
+$page     = optional_param('page', 0, PARAM_INT);
+$sort     = optional_param('sort', 'name', PARAM_ALPHA);
+$dir      = optional_param('dir', 'ASC', PARAM_ALPHA);
+$perpage  = \local_cohort_manager\manager::COHORTS_PER_PAGE;
 
-$baseurl = new moodle_url('/local/cohort_manager/index.php', ['search' => $search, 'sort' => $sort, 'dir' => $dir]);
+$baseurl = new moodle_url('/local/cohort_manager/index.php',
+    ['search' => $search, 'restrict' => $restrict, 'sort' => $sort, 'dir' => $dir]);
 
 $PAGE->set_url($baseurl);
 $PAGE->set_context($context);
@@ -42,11 +44,11 @@ $PAGE->set_pagelayout('admin');
 $PAGE->set_title(get_string('pluginname', 'local_cohort_manager'));
 $PAGE->set_heading(get_string('pluginname', 'local_cohort_manager'));
 
-$totalcount = \local_cohort_manager\manager::count_cohorts($search);
-$cohorts = \local_cohort_manager\manager::search_cohorts($search, $page, $perpage, $sort, $dir);
+$totalcount = \local_cohort_manager\manager::count_cohorts($search, $restrict);
+$cohorts = \local_cohort_manager\manager::search_cohorts($search, $page, $perpage, $sort, $dir, $restrict);
 
 // Build sort URLs for column headers (toggle direction if already sorting by this column).
-$sortparams = ['search' => $search];
+$sortparams = ['search' => $search, 'restrict' => $restrict];
 $makesorturl = function(string $column) use ($sort, $dir, $sortparams) {
     $newdir = ($sort === $column && $dir === 'ASC') ? 'DESC' : 'ASC';
     return (new moodle_url('/local/cohort_manager/index.php',
@@ -58,10 +60,11 @@ $sorticon = $dir === 'ASC' ? $OUTPUT->pix_icon('t/sort_asc', '') : $OUTPUT->pix_
 $ariasort = $dir === 'ASC' ? 'ascending' : 'descending';
 
 $data = [
-    'searchurl'   => (new moodle_url('/local/cohort_manager/index.php'))->out(false),
-    'searchvalue' => $search,
-    'has_cohorts' => !empty($cohorts),
-    'cohorts'     => array_values(array_map(function($cohort) use ($context) {
+    'searchurl'     => (new moodle_url('/local/cohort_manager/index.php'))->out(false),
+    'searchvalue'   => $search,
+    'restrictvalue' => $restrict,
+    'has_cohorts'   => !empty($cohorts),
+    'cohorts'       => array_values(array_map(function($cohort) use ($context) {
         return [
             'id'          => $cohort->id,
             // Mustache escapes {{ }} output itself, so ask format_string/content_to_text
@@ -76,7 +79,7 @@ $data = [
             'viewurl'     => (new moodle_url('/local/cohort_manager/view.php', ['id' => $cohort->id]))->out(false),
         ];
     }, $cohorts)),
-    'pagination'  => $totalcount > $perpage ? $OUTPUT->paging_bar($totalcount, $page, $perpage, $baseurl) : '',
+    'pagination'    => $totalcount > $perpage ? $OUTPUT->paging_bar($totalcount, $page, $perpage, $baseurl) : '',
     'usercohortsurl' => (new moodle_url('/local/cohort_manager/user.php'))->out(false),
     'sort_name_url'        => $makesorturl('name'),
     'sort_idnumber_url'    => $makesorturl('idnumber'),
