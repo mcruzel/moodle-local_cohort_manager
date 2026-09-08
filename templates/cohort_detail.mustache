@@ -44,7 +44,7 @@
 
     {{! Back navigation }}
     <div class="mb-3">
-        <a href="{{backurl}}" class="btn btn-link ps-0">
+        <a href="{{backurl}}" class="btn btn-link pl-0 ps-0">
             &laquo; {{#str}}backtocohortlist, local_cohort_manager{{/str}}
         </a>
     </div>
@@ -66,12 +66,12 @@
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="action" value="renamecohort">
                 <input type="hidden" name="cohortid" value="{{cohort_id}}">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <label for="cohortname" class="visually-hidden">
+                <div class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
+                    <label for="cohortname" class="sr-only visually-hidden">
                         {{#str}}cohortname, local_cohort_manager{{/str}}
                     </label>
                     <input type="text" id="cohortname" name="cohortname"
-                           value="{{cohort_name_raw}}" class="form-control me-2" required>
+                           value="{{cohort_name_raw}}" class="form-control mr-2 me-2" required>
                     <button type="submit" class="btn btn-primary">
                         {{#str}}renamecohort, local_cohort_manager{{/str}}
                     </button>
@@ -93,13 +93,13 @@
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="action" value="batchrename">
                 <input type="hidden" name="cohortid" value="{{cohort_id}}">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <label for="batchgroupname" class="visually-hidden">
+                <div class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
+                    <label for="batchgroupname" class="sr-only visually-hidden">
                         {{#str}}newgroupname, local_cohort_manager{{/str}}
                     </label>
                     <input type="text" id="batchgroupname" name="batchgroupname"
                            placeholder="{{#str}}newgroupname, local_cohort_manager{{/str}}"
-                           class="form-control me-2" required>
+                           class="form-control mr-2 me-2" required>
                     <span class="d-none" id="batchConfirmMsg">{{#str}}batchrenameconfirm, local_cohort_manager{{/str}}</span>
                     <button type="submit" class="btn btn-warning" id="batchRenameBtn">
                         {{#str}}batchrename, local_cohort_manager{{/str}}
@@ -132,27 +132,29 @@
                         {{groupname}}
                     {{/has_group}}
                     {{^has_group}}
-                        <span class="text-muted fst-italic">
+                        <span class="text-muted font-italic fst-italic">
                             {{#str}}nogroup, local_cohort_manager{{/str}}
                         </span>
                     {{/has_group}}
                 </td>
                 <td>
                     {{#has_group}}
-                    <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
+                    <form method="post" action="{{action_url}}"
+                          class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
                         <input type="hidden" name="sesskey" value="{{sesskey}}">
                         <input type="hidden" name="action" value="renamegroup">
                         <input type="hidden" name="cohortid" value="{{cohort_id}}">
                         <input type="hidden" name="groupid" value="{{groupid}}">
                         <input type="text" name="groupname" value="{{groupname}}"
-                               class="form-control form-control-sm me-1" required>
+                               class="form-control form-control-sm mr-1 me-1" required>
                         <button type="submit" class="btn btn-sm btn-secondary">
                             {{#str}}rename, local_cohort_manager{{/str}}
                         </button>
                     </form>
                     {{/has_group}}
                     {{^has_group}}
-                    <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
+                    <form method="post" action="{{action_url}}"
+                          class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
                         <input type="hidden" name="sesskey" value="{{sesskey}}">
                         <input type="hidden" name="action" value="creategroup">
                         <input type="hidden" name="cohortid" value="{{cohort_id}}">
@@ -179,7 +181,9 @@
     {{! Delete cohort section }}
     <hr>
     <div class="mt-4">
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+        <button type="button" class="btn btn-danger"
+                data-toggle="modal" data-target="#deleteModal"
+                data-bs-toggle="modal" data-bs-target="#deleteModal">
             {{#str}}deletecohort, local_cohort_manager{{/str}}
         </button>
     </div>
@@ -192,8 +196,10 @@
                     <h5 class="modal-title" id="deleteModalLabel">
                         {{#str}}deletecohort, local_cohort_manager{{/str}}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="{{#str}}closebuttontitle, core{{/str}}"></button>
+                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal"
+                            aria-label="{{#str}}closebuttontitle, core{{/str}}">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <form method="post" action="{{action_url}}" id="deleteCohortForm">
                     <div class="modal-body">
@@ -204,7 +210,7 @@
                             {{#str}}deletewarning, local_cohort_manager{{/str}}
                         </div>
                         <p>{{#str}}deletetypename, local_cohort_manager{{/str}}</p>
-                        <p class="fw-bold">{{cohort_name}}</p>
+                        <p class="font-weight-bold fw-bold">{{cohort_name}}</p>
                         <div class="mb-3">
                             <input type="text" id="confirmname" name="confirmname"
                                    class="form-control" autocomplete="off" required
@@ -212,7 +218,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">
                             {{#str}}cancel, local_cohort_manager{{/str}}
                         </button>
                         <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>
