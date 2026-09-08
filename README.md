@@ -1,6 +1,6 @@
 # Cohort Manager #
 
-[![Moodle 5.0 – 5.2](https://img.shields.io/badge/Moodle-5.0%E2%80%935.2-orange)](https://moodle.org)
+[![Moodle 4.3 – 5.2](https://img.shields.io/badge/Moodle-4.3%E2%80%935.2-orange)](https://moodle.org)
 [![Licence GPL v3+](https://img.shields.io/badge/licence-GPL%20v3%2B-blue)](https://www.gnu.org/licenses/gpl-3.0)
 
 A Moodle local plugin that gives site managers a single place to audit and
@@ -63,8 +63,24 @@ The plugin defines no database tables of its own. It reads and writes core
 
 ## Requirements ##
 
-* Moodle 5.0 (build 2025041400) to Moodle 5.2 — the interface relies on Bootstrap 5, shipped with Moodle since 5.0. Since Moodle 5.1 the plugin installs under `public/local/cohort_manager`.
+* Moodle 4.3 (build 2023100900) to Moodle 5.2. The templates carry both the
+  Bootstrap 4 and the Bootstrap 5 spelling of the utility classes they need, so
+  they render on the Bootstrap 4 themes of Moodle 4.x and on the Bootstrap 5
+  themes of Moodle 5.x without a version switch in PHP.
+* PHP 8.0 or later (the floor of Moodle 4.3; Moodle 5.2 itself requires PHP 8.3).
 * No additional PHP extensions or external services.
+
+Since Moodle 5.1 the plugin installs under `public/local/cohort_manager` rather
+than `local/cohort_manager`, following the web root moved to `public/`. No code
+change is needed for this: `$CFG->dirroot` points at that directory.
+
+> **On the 4.x range.** Compatibility with Moodle 4.3 to 4.5 was established by
+> auditing the plugin against the `MOODLE_403_STABLE` and `MOODLE_502_STABLE`
+> sources: every core function, class and template helper the plugin calls exists
+> with the same signature across that range. It has not yet been exercised on a
+> running 4.x site. Smoke-test it there before relying on it, and be aware that
+> Moodle 4.3 and 4.4 are past their security-support window — 4.5 is the LTS of
+> that series.
 
 ## Installing via uploaded ZIP file ##
 

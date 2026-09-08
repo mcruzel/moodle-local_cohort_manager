@@ -91,7 +91,7 @@
                             </a>
                             {{/selected}}
                             {{#selected}}
-                            <span class="badge text-bg-primary">{{#str}}selecteduser, local_cohort_manager{{/str}}</span>
+                            <span class="badge bg-primary text-white">{{#str}}selecteduser, local_cohort_manager{{/str}}</span>
                             {{/selected}}
                         </td>
                     </tr>
@@ -114,17 +114,18 @@
         <div class="card-body">
 
             {{! Add cohort form with AJAX autocomplete }}
-            <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <form method="post" action="{{action_url}}"
+                  class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap mb-3">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="action" value="addcohort">
                 <input type="hidden" name="userid" value="{{selected_user_id}}">
-                <label for="cohortid" class="me-2">{{#str}}addtocohort, local_cohort_manager{{/str}}</label>
-                <div class="me-2 local-cohort-manager-cohort-restrict">
+                <label for="cohortid" class="mr-2 me-2">{{#str}}addtocohort, local_cohort_manager{{/str}}</label>
+                <div class="mr-2 me-2 local-cohort-manager-cohort-restrict">
                     <input type="text" id="cohortrestrict" class="form-control"
                            placeholder="{{#str}}restrictcohortplaceholder, local_cohort_manager{{/str}}"
                            aria-label="{{#str}}restrictcohortsearch, local_cohort_manager{{/str}}">
                 </div>
-                <div class="me-2 local-cohort-manager-cohort-select">
+                <div class="mr-2 me-2 local-cohort-manager-cohort-select">
                     <select name="cohortid" id="cohortid" class="form-control"
                             data-userid="{{selected_user_id}}" data-restrict="">
                         <option value="">{{#str}}selectcohort, local_cohort_manager{{/str}}</option>
@@ -177,7 +178,8 @@
                         <td>{{idnumber}}</td>
                         <td>
                             {{^is_component_managed}}
-                            <form method="post" action="{{action_url}}" class="d-flex flex-wrap align-items-center gap-2">
+                            <form method="post" action="{{action_url}}"
+                                  class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
                                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                                 <input type="hidden" name="action" value="removecohort">
                                 <input type="hidden" name="userid" value="{{selected_user_id}}">

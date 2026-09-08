@@ -34,3 +34,44 @@
     min-width: 200px;
     max-width: 250px;
 }
+
+/* ---------------------------------------------------------------------------
+ * Bootstrap 4 / Bootstrap 5 parity.
+ *
+ * Moodle 4.x ships Bootstrap 4 and Moodle 5.x Bootstrap 5. Most divergent
+ * utilities are handled in the templates by emitting both class names, but the
+ * rules below cover the cases that have no Bootstrap 4 counterpart at all, or
+ * that Moodle 5.x only provides through its transitional bs4-compat layer
+ * (deprecated, removed in Moodle 6.0 per MDL-84465). All values match the
+ * Bootstrap 5 defaults, so these rules are inert on Moodle 5.x.
+ * --------------------------------------------------------------------------- */
+
+/* Bootstrap 4 has no gap utilities: ".gap-2" is $spacer * .5 in Bootstrap 5. */
+.local-cohort-manager-gap {
+    gap: 0.5rem;
+}
+
+/* Bootstrap 4 expects a button inside .input-group to be wrapped in
+   .input-group-append; square off the joined edge so the search buttons look
+   the same on both. */
+.local-cohort-manager-list .input-group > .btn,
+.local-cohort-manager-user .input-group > .btn {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Keep the dialog dismiss control legible if ".close" ever stops being styled. */
+.local-cohort-manager-detail .modal-header .close {
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.5;
+}
+.local-cohort-manager-detail .modal-header .close:hover,
+.local-cohort-manager-detail .modal-header .close:focus {
+    opacity: 0.75;
+}

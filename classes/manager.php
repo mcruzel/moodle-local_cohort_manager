@@ -310,7 +310,15 @@ class manager {
 
         require_once($CFG->dirroot . '/enrol/cohort/locallib.php');
 
-        $trace = new \core\output\progress_trace\null_progress_trace();
+        // The progress_trace classes were moved into the \core\output namespace in Moodle 5.0.
+        // Moodle 5.x still autoloads the global name through lib/db/legacyclasses.php, but that
+        // alias is transitional, so prefer the namespaced class whenever it is available.
+        if (class_exists('\core\output\progress_trace\null_progress_trace')) {
+            $trace = new \core\output\progress_trace\null_progress_trace();
+        } else {
+            $trace = new \null_progress_trace();
+        }
+
         enrol_cohort_sync($trace, $courseid);
         $trace->finished();
     }
