@@ -46,6 +46,14 @@ or create those groups — individually or in bulk — without visiting each cou
 * Rename a single group.
 * Batch rename every group linked to the cohort's enrolment instances, in one
   database transaction.
+* Remove the cohort from a course, through the red **S** button on the course's
+  row. It deletes that `enrol_cohort` instance — which unenrols everyone it had
+  enrolled — and, by default, the group linked to it. A modal spells out those
+  consequences — including how many users the instance currently enrols — and
+  offers a *Do not delete the linked group* checkbox for the cases where the
+  group has to survive the enrolment method. The button needs its own
+  capability, `local/cohort_manager:removeenrolment`, and is not rendered at all
+  without it.
 
 **User memberships** (`user.php`)
 
@@ -63,7 +71,8 @@ or create those groups — individually or in bulk — without visiting each cou
 The plugin defines no database tables of its own. It reads and writes core
 `cohort`, `groups` and `enrol` records through the core APIs
 (`cohort_update_cohort`, `cohort_delete_cohort`, `groups_create_group`,
-`groups_update_group`, `cohort_add_member`, `cohort_remove_member`).
+`groups_update_group`, `groups_delete_group`, `cohort_add_member`,
+`cohort_remove_member`, and `enrol_get_plugin('cohort')->delete_instance()`).
 
 ## Requirements ##
 
@@ -119,17 +128,29 @@ Local plugins > Cohort Manager*, or directly at
 `/local/cohort_manager/index.php`.
 
 Every page requires the `local/cohort_manager:manage` capability in the system
-context, so the entry is hidden from users who do not hold it.
+context, so the entry is hidden from users who do not hold it. Removing a cohort
+from a course additionally requires `local/cohort_manager:removeenrolment`.
 
 ## Capabilities ##
 
 | Capability | Context | Risk | Granted by default to |
 | --- | --- | --- | --- |
 | `local/cohort_manager:manage` | System | `RISK_CONFIG` | Manager |
+| `local/cohort_manager:removeenrolment` | System | `RISK_DATALOSS` | Nobody |
 
-Grant it to other roles in *Site administration > Users > Permissions > Define
-roles*. It is the only capability the plugin checks; there is no read-only
-mode.
+Grant them to other roles in *Site administration > Users > Permissions > Define
+roles*. There is no read-only mode: `local/cohort_manager:manage` opens every
+page and every action of the plugin except one.
+
+That exception is `local/cohort_manager:removeenrolment`, which gates the **S**
+button that removes a cohort from a course. It is deliberately granted to no
+archetype, not even Manager, because the action unenrols users and destroys
+course data that no other action of the plugin touches — so it has to be allowed
+role by role, and holding `local/cohort_manager:manage` is not enough. Site
+administrators bypass capability checks and therefore always see the button.
+`view.php` only decides whether to render it; `action.php` enforces the
+capability on the POST itself, so hiding the button is not the only line of
+defence.
 
 ## Web services ##
 
@@ -152,9 +173,14 @@ The plugin triggers the following events, visible in the standard log report:
 | `\local_cohort_manager\event\cohort_renamed` | `cohort` | update |
 | `\local_cohort_manager\event\group_renamed` | `groups` | update |
 | `\local_cohort_manager\event\groups_batch_renamed` | `cohort` | update |
+| `\local_cohort_manager\event\enrolment_deleted` | `enrol` | delete |
 
 Cohort deletion and cohort membership changes are logged by the corresponding
-core events, which the core APIs fire on the plugin's behalf.
+core events, which the core APIs fire on the plugin's behalf. Removing a cohort
+from a course is logged twice on purpose: once by the plugin event above, and
+once by the core `\core\event\enrol_instance_deleted` (plus one
+`\core\event\user_enrolment_deleted` per user unenrolled, and
+`\core\event\group_deleted` when the linked group goes with it).
 
 ## Privacy ##
 
@@ -174,7 +200,9 @@ Every entry point calls `require_login()` and enforces
 `local/cohort_manager:manage` in the system context. The two write endpoints
 (`action.php` and `useraction.php`) additionally call `require_sesskey()`, and
 all forms post a session key, so the plugin's state-changing operations are not
-reachable by CSRF.
+reachable by CSRF. The `deleteenrolment` action of `action.php` also calls
+`require_capability('local/cohort_manager:removeenrolment', ...)`, so a forged
+POST from a user who merely holds `local/cohort_manager:manage` is refused.
 
 ## Notes and known limitations ##
 
@@ -191,6 +219,18 @@ reachable by CSRF.
   more. The plugin does not remove the cohort enrolment instances that pointed
   at the cohort, nor the groups that were created for them — review those
   courses yourself after a deletion.
+* Removing a cohort from a course keeps the linked group, whatever the modal's
+  checkbox says, when another synchronised enrolment instance of the same course
+  points at that group (`enrol_cohort` and `enrol_meta` both store it in
+  `enrol.customint2`). Deleting it would silently empty the other instance's
+  group. The confirmation message says so when that happens.
+* The `S` button is governed by `local/cohort_manager:removeenrolment` in the
+  system context. It does not additionally require `enrol/cohort:config` in the
+  course, so a role holding that capability can remove a cohort enrolment from a
+  course it could not otherwise configure — which is the point of a site-wide
+  cohort tool, but is worth knowing before granting it. Note that upgrading an
+  existing install grants the new capability to nobody: managers who used to see
+  the button lose it until a site administrator allows it for their role.
 
 ## Uninstalling ##
 

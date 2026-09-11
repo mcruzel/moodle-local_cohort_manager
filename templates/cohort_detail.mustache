@@ -1,7 +1,8 @@
 {{!
     @template local_cohort_manager/cohort_detail
 
-    Displays cohort detail with rename forms and enrolment table.
+    Displays cohort detail with rename forms, the enrolment table, the modal that
+    removes the cohort from one course and the modal that deletes the cohort.
 
     Context variables required:
     * cohort_id - The cohort ID
@@ -9,12 +10,15 @@
     * cohort_name_raw - The raw cohort name (for the rename input and delete confirmation)
     * is_component_managed - Boolean, true when the cohort is owned by another component
                              (rename and delete are then hidden)
+    * can_remove_enrolment - Boolean, true when the user holds
+                             local/cohort_manager:removeenrolment (the "S" button and its
+                             modal are then rendered)
     * backurl - URL to go back to the cohort list
     * action_url - URL for action.php POST
     * sesskey - Session key for CSRF protection
     * has_enrolments - Boolean
     * enrolments - Array of: enrolid, courseid, course_fullname, course_shortname,
-                             enrolurl, groupid, groupname, has_group
+                             enrolurl, groupid, groupname, has_group, user_count
 
     Example context (json):
     {
@@ -22,6 +26,7 @@
         "cohort_name": "Cohort A",
         "cohort_name_raw": "Cohort A",
         "is_component_managed": false,
+        "can_remove_enrolment": true,
         "backurl": "/local/cohort_manager/index.php",
         "action_url": "/local/cohort_manager/action.php",
         "sesskey": "abc123",
@@ -35,7 +40,8 @@
                 "enrolurl": "/enrol/instances.php?id=5",
                 "groupid": 3,
                 "groupname": "Group A",
-                "has_group": true
+                "has_group": true,
+                "user_count": 24
             }
         ]
     }
@@ -138,37 +144,127 @@
                     {{/has_group}}
                 </td>
                 <td>
-                    {{#has_group}}
-                    <form method="post" action="{{action_url}}"
-                          class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
-                        <input type="hidden" name="sesskey" value="{{sesskey}}">
-                        <input type="hidden" name="action" value="renamegroup">
-                        <input type="hidden" name="cohortid" value="{{cohort_id}}">
-                        <input type="hidden" name="groupid" value="{{groupid}}">
-                        <input type="text" name="groupname" value="{{groupname}}"
-                               class="form-control form-control-sm mr-1 me-1" required>
-                        <button type="submit" class="btn btn-sm btn-secondary">
-                            {{#str}}rename, local_cohort_manager{{/str}}
+                    <div class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
+                        {{#has_group}}
+                        <form method="post" action="{{action_url}}"
+                              class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <input type="hidden" name="action" value="renamegroup">
+                            <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                            <input type="hidden" name="groupid" value="{{groupid}}">
+                            <input type="text" name="groupname" value="{{groupname}}"
+                                   class="form-control form-control-sm mr-1 me-1" required>
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {{#str}}rename, local_cohort_manager{{/str}}
+                            </button>
+                        </form>
+                        {{/has_group}}
+                        {{^has_group}}
+                        <form method="post" action="{{action_url}}"
+                              class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <input type="hidden" name="action" value="creategroup">
+                            <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                            <input type="hidden" name="enrolid" value="{{enrolid}}">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                {{#str}}creategroup, local_cohort_manager{{/str}}
+                            </button>
+                        </form>
+                        {{/has_group}}
+                        {{#can_remove_enrolment}}
+                        {{! "S" for "supprimer": removes this cohort enrolment instance from the
+                             course. The modal below is filled in from these data attributes. }}
+                        <button type="button"
+                                class="btn btn-sm btn-danger local-cohort-manager-remove-enrol"
+                                data-toggle="modal" data-target="#removeEnrolModal"
+                                data-bs-toggle="modal" data-bs-target="#removeEnrolModal"
+                                data-enrolid="{{enrolid}}"
+                                data-course="{{course_fullname}}"
+                                data-group="{{groupname}}"
+                                data-has-group="{{#has_group}}1{{/has_group}}{{^has_group}}0{{/has_group}}"
+                                data-users="{{user_count}}"
+                                title="{{#str}}removeenrolment, local_cohort_manager{{/str}}"
+                                aria-label="{{#str}}removeenrolment, local_cohort_manager{{/str}}">
+                            {{#str}}removeenrolmentshort, local_cohort_manager{{/str}}
                         </button>
-                    </form>
-                    {{/has_group}}
-                    {{^has_group}}
-                    <form method="post" action="{{action_url}}"
-                          class="d-flex flex-wrap align-items-center gap-2 local-cohort-manager-gap">
-                        <input type="hidden" name="sesskey" value="{{sesskey}}">
-                        <input type="hidden" name="action" value="creategroup">
-                        <input type="hidden" name="cohortid" value="{{cohort_id}}">
-                        <input type="hidden" name="enrolid" value="{{enrolid}}">
-                        <button type="submit" class="btn btn-sm btn-success">
-                            {{#str}}creategroup, local_cohort_manager{{/str}}
-                        </button>
-                    </form>
-                    {{/has_group}}
+                        {{/can_remove_enrolment}}
+                    </div>
                 </td>
             </tr>
             {{/enrolments}}
         </tbody>
     </table>
+
+    {{#can_remove_enrolment}}
+    {{! Remove-enrolment confirmation modal, shared by every row of the table: the row's
+         button fills in the course name, the number of users the instance enrols, the
+         group block and the hidden enrol id. }}
+    <div class="modal fade" id="removeEnrolModal" tabindex="-1" role="dialog"
+         aria-labelledby="removeEnrolModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeEnrolModalLabel">
+                        {{#str}}removeenrolment, local_cohort_manager{{/str}}
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal"
+                            aria-label="{{#str}}closebuttontitle, core{{/str}}">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="{{action_url}}" id="removeEnrolForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        <input type="hidden" name="action" value="deleteenrolment">
+                        <input type="hidden" name="cohortid" value="{{cohort_id}}">
+                        <input type="hidden" name="enrolid" value="" id="removeEnrolId">
+                        <div class="alert alert-danger">
+                            <p class="font-weight-bold fw-bold">
+                                {{#str}}removeenrolmentwarning, local_cohort_manager{{/str}}
+                            </p>
+                            <ul class="mb-0">
+                                <li>{{#str}}removeenrolmentconsequence1, local_cohort_manager{{/str}}</li>
+                                <li>{{#str}}removeenrolmentconsequence2, local_cohort_manager{{/str}}</li>
+                                <li>{{#str}}removeenrolmentconsequence3, local_cohort_manager{{/str}}</li>
+                                <li>{{#str}}removeenrolmentconsequence4, local_cohort_manager{{/str}}</li>
+                            </ul>
+                        </div>
+                        <p class="mb-1">{{#str}}removeenrolmentcourse, local_cohort_manager{{/str}}</p>
+                        <p class="font-weight-bold fw-bold" id="removeEnrolCourse"></p>
+                        <p class="mb-1">
+                            {{#str}}removeenrolmentusers, local_cohort_manager{{/str}}
+                            <span class="font-weight-bold fw-bold" id="removeEnrolUsers"></span>
+                        </p>
+                        <div id="removeEnrolGroupBlock">
+                            <p class="mb-1">
+                                {{#str}}removeenrolmentgroup, local_cohort_manager{{/str}}
+                                <span class="font-weight-bold fw-bold" id="removeEnrolGroupName"></span>
+                            </p>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="keepgroup"
+                                       name="keepgroup" value="1">
+                                <label class="form-check-label" for="keepgroup">
+                                    {{#str}}keepgroup, local_cohort_manager{{/str}}
+                                </label>
+                                <div class="text-muted small">
+                                    {{#str}}keepgroupdesc, local_cohort_manager{{/str}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">
+                            {{#str}}cancel, local_cohort_manager{{/str}}
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            {{#str}}confirmremoveenrolment, local_cohort_manager{{/str}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/can_remove_enrolment}}
     {{/has_enrolments}}
 
     {{^has_enrolments}}
@@ -247,6 +343,33 @@
             var expected = expectedholder.getAttribute('data-name');
             input.addEventListener('input', function() {
                 btn.disabled = (input.value.trim() !== expected);
+            });
+        }
+
+        // Remove-enrolment modal: fill it in from the row whose button was clicked.
+        // Bootstrap opens the dialog from a listener delegated on the document, so these
+        // listeners, bound on the buttons themselves, always run first.
+        var removeBtns = document.querySelectorAll('.local-cohort-manager-remove-enrol');
+        var enrolIdField = document.getElementById('removeEnrolId');
+        var keepGroup = document.getElementById('keepgroup');
+        if (removeBtns.length && enrolIdField && keepGroup) {
+            var courseHolder = document.getElementById('removeEnrolCourse');
+            var userCountHolder = document.getElementById('removeEnrolUsers');
+            var groupBlock = document.getElementById('removeEnrolGroupBlock');
+            var groupNameHolder = document.getElementById('removeEnrolGroupName');
+            Array.prototype.forEach.call(removeBtns, function(removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    var hasGroup = removeBtn.getAttribute('data-has-group') === '1';
+                    enrolIdField.value = removeBtn.getAttribute('data-enrolid');
+                    courseHolder.textContent = removeBtn.getAttribute('data-course');
+                    userCountHolder.textContent = removeBtn.getAttribute('data-users');
+                    groupNameHolder.textContent = removeBtn.getAttribute('data-group');
+                    // The whole group block is meaningless without a group; reset the
+                    // checkbox on every opening so a previous row's choice never carries over.
+                    groupBlock.classList.toggle('d-none', !hasGroup);
+                    keepGroup.checked = false;
+                    keepGroup.disabled = !hasGroup;
+                });
             });
         }
 

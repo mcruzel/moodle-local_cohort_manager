@@ -33,4 +33,15 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+
+    // Removing a cohort from a course unenrols everyone that enrolment method had
+    // enrolled, so it is gated separately from the rest of the plugin and granted to
+    // no archetype: it has to be allowed role by role. Site administrators, who bypass
+    // capability checks, keep it either way.
+    'local/cohort_manager:removeenrolment' => [
+        'riskbitmask'  => RISK_DATALOSS,
+        'captype'      => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes'   => [],
+    ],
 ];
