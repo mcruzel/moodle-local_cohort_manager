@@ -66,6 +66,9 @@ switch ($action) {
         break;
 
     case 'deleteenrolment':
+        // Unenrolling everyone from a course is gated by its own capability, on top of
+        // the plugin-wide one every action of this file already required.
+        require_capability('local/cohort_manager:removeenrolment', context_system::instance());
         $enrolid = required_param('enrolid', PARAM_INT);
         // Unticked checkboxes are not posted at all, so the group is deleted by default.
         $keepgroup = optional_param('keepgroup', 0, PARAM_BOOL);

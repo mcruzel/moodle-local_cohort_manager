@@ -51,7 +51,9 @@ or create those groups — individually or in bulk — without visiting each cou
   enrolled — and, by default, the group linked to it. A modal spells out those
   consequences — including how many users the instance currently enrols — and
   offers a *Do not delete the linked group* checkbox for the cases where the
-  group has to survive the enrolment method.
+  group has to survive the enrolment method. The button needs its own
+  capability, `local/cohort_manager:removeenrolment`, and is not rendered at all
+  without it.
 
 **User memberships** (`user.php`)
 
@@ -126,17 +128,29 @@ Local plugins > Cohort Manager*, or directly at
 `/local/cohort_manager/index.php`.
 
 Every page requires the `local/cohort_manager:manage` capability in the system
-context, so the entry is hidden from users who do not hold it.
+context, so the entry is hidden from users who do not hold it. Removing a cohort
+from a course additionally requires `local/cohort_manager:removeenrolment`.
 
 ## Capabilities ##
 
 | Capability | Context | Risk | Granted by default to |
 | --- | --- | --- | --- |
 | `local/cohort_manager:manage` | System | `RISK_CONFIG` | Manager |
+| `local/cohort_manager:removeenrolment` | System | `RISK_DATALOSS` | Nobody |
 
-Grant it to other roles in *Site administration > Users > Permissions > Define
-roles*. It is the only capability the plugin checks; there is no read-only
-mode.
+Grant them to other roles in *Site administration > Users > Permissions > Define
+roles*. There is no read-only mode: `local/cohort_manager:manage` opens every
+page and every action of the plugin except one.
+
+That exception is `local/cohort_manager:removeenrolment`, which gates the **S**
+button that removes a cohort from a course. It is deliberately granted to no
+archetype, not even Manager, because the action unenrols users and destroys
+course data that no other action of the plugin touches — so it has to be allowed
+role by role, and holding `local/cohort_manager:manage` is not enough. Site
+administrators bypass capability checks and therefore always see the button.
+`view.php` only decides whether to render it; `action.php` enforces the
+capability on the POST itself, so hiding the button is not the only line of
+defence.
 
 ## Web services ##
 
@@ -186,7 +200,9 @@ Every entry point calls `require_login()` and enforces
 `local/cohort_manager:manage` in the system context. The two write endpoints
 (`action.php` and `useraction.php`) additionally call `require_sesskey()`, and
 all forms post a session key, so the plugin's state-changing operations are not
-reachable by CSRF.
+reachable by CSRF. The `deleteenrolment` action of `action.php` also calls
+`require_capability('local/cohort_manager:removeenrolment', ...)`, so a forged
+POST from a user who merely holds `local/cohort_manager:manage` is refused.
 
 ## Notes and known limitations ##
 
@@ -208,12 +224,13 @@ reachable by CSRF.
   points at that group (`enrol_cohort` and `enrol_meta` both store it in
   `enrol.customint2`). Deleting it would silently empty the other instance's
   group. The confirmation message says so when that happens.
-* The `S` button is governed by `local/cohort_manager:manage` alone, like every
-  other action of the plugin. It does not additionally require
-  `enrol/cohort:config` in the course, so a role holding the plugin capability
-  can remove a cohort enrolment from a course it could not otherwise configure.
-  That is the capability's stated scope — managing cohort deployments — but it
-  is worth knowing before granting it to a non-manager role.
+* The `S` button is governed by `local/cohort_manager:removeenrolment` in the
+  system context. It does not additionally require `enrol/cohort:config` in the
+  course, so a role holding that capability can remove a cohort enrolment from a
+  course it could not otherwise configure — which is the point of a site-wide
+  cohort tool, but is worth knowing before granting it. Note that upgrading an
+  existing install grants the new capability to nobody: managers who used to see
+  the button lose it until a site administrator allows it for their role.
 
 ## Uninstalling ##
 

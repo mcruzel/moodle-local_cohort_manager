@@ -57,6 +57,8 @@ $data = [
     'cohort_name'     => $cohortnameplain,
     'cohort_name_raw' => $cohort->name,
     'is_component_managed' => !empty($cohort->component),
+    // Only decides whether the button and its modal are rendered; action.php enforces it.
+    'can_remove_enrolment' => has_capability('local/cohort_manager:removeenrolment', $context),
     'backurl'        => (new moodle_url('/local/cohort_manager/index.php'))->out(false),
     'action_url'     => $actionurl,
     'sesskey'        => sesskey(),

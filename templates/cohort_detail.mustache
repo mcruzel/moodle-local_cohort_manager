@@ -10,6 +10,9 @@
     * cohort_name_raw - The raw cohort name (for the rename input and delete confirmation)
     * is_component_managed - Boolean, true when the cohort is owned by another component
                              (rename and delete are then hidden)
+    * can_remove_enrolment - Boolean, true when the user holds
+                             local/cohort_manager:removeenrolment (the "S" button and its
+                             modal are then rendered)
     * backurl - URL to go back to the cohort list
     * action_url - URL for action.php POST
     * sesskey - Session key for CSRF protection
@@ -23,6 +26,7 @@
         "cohort_name": "Cohort A",
         "cohort_name_raw": "Cohort A",
         "is_component_managed": false,
+        "can_remove_enrolment": true,
         "backurl": "/local/cohort_manager/index.php",
         "action_url": "/local/cohort_manager/action.php",
         "sesskey": "abc123",
@@ -167,6 +171,7 @@
                             </button>
                         </form>
                         {{/has_group}}
+                        {{#can_remove_enrolment}}
                         {{! "S" for "supprimer": removes this cohort enrolment instance from the
                              course. The modal below is filled in from these data attributes. }}
                         <button type="button"
@@ -182,6 +187,7 @@
                                 aria-label="{{#str}}removeenrolment, local_cohort_manager{{/str}}">
                             {{#str}}removeenrolmentshort, local_cohort_manager{{/str}}
                         </button>
+                        {{/can_remove_enrolment}}
                     </div>
                 </td>
             </tr>
@@ -189,6 +195,7 @@
         </tbody>
     </table>
 
+    {{#can_remove_enrolment}}
     {{! Remove-enrolment confirmation modal, shared by every row of the table: the row's
          button fills in the course name, the number of users the instance enrols, the
          group block and the hidden enrol id. }}
@@ -257,6 +264,7 @@
             </div>
         </div>
     </div>
+    {{/can_remove_enrolment}}
     {{/has_enrolments}}
 
     {{^has_enrolments}}

@@ -35,6 +35,7 @@ $string['batchrenamegroups'] = 'Renommage des groupes en lot';
 $string['cancel'] = 'Annuler';
 $string['cannotmanagecohort'] = 'Cette cohorte est gérée par un autre composant (\'{$a}\') et ne peut pas être modifiée ici.';
 $string['cohort_manager:manage'] = 'Gérer les déploiements de cohortes';
+$string['cohort_manager:removeenrolment'] = 'Supprimer une cohorte d\'un cours';
 $string['cohortdeleted'] = 'Cohorte supprimée avec succès.';
 $string['cohortidnumber'] = 'Identifiant';
 $string['cohortname'] = 'Nom de la cohorte';
