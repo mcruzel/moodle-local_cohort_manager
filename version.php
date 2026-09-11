@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_cohort_manager';
-$plugin->version   = 2026090801;
+$plugin->version   = 2026091100;
 $plugin->requires  = 2023100900; // Moodle 4.3.
 $plugin->supported = [403, 502];
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.7.0';
+$plugin->release   = '0.8.0';

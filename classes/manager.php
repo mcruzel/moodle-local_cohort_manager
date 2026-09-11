@@ -41,6 +41,18 @@ class manager {
     /** @var array Allowed sort columns for cohort list. */
     const SORT_COLUMNS = ['name', 'idnumber', 'enrolcount', 'membercount'];
 
+    /** @var string The enrolment instance had no group linked to it. */
+    const GROUP_NONE = 'none';
+
+    /** @var string The linked group was kept because the caller asked for it. */
+    const GROUP_KEPT = 'kept';
+
+    /** @var string The linked group was kept because another enrolment instance uses it. */
+    const GROUP_SHARED = 'shared';
+
+    /** @var string The linked group was deleted along with the enrolment instance. */
+    const GROUP_DELETED = 'deleted';
+
     /**
      * Build the WHERE clause and params for cohort search.
      *
@@ -178,14 +190,18 @@ class manager {
      * along with the associated group information.
      *
      * @param int $cohortid The cohort ID.
-     * @return array Array of objects with: enrolid, courseid, fullname, shortname, groupid, groupname.
+     * @return array Array of objects with: enrolid, courseid, fullname, shortname, groupid,
+     *               groupname, usercount (users the enrolment instance currently enrols).
      */
     public static function get_cohort_enrolments(int $cohortid): array {
         global $DB;
 
         $sql = "SELECT e.id AS enrolid, e.courseid,
                        c.fullname, c.shortname,
-                       g.id AS groupid, g.name AS groupname
+                       g.id AS groupid, g.name AS groupname,
+                       (SELECT COUNT(*)
+                          FROM {user_enrolments} ue
+                         WHERE ue.enrolid = e.id) AS usercount
                   FROM {enrol} e
                   JOIN {course} c ON c.id = e.courseid
              LEFT JOIN {groups} g ON g.id = e.customint2
@@ -341,6 +357,74 @@ class manager {
 
         enrol_cohort_sync($trace, $courseid);
         $trace->finished();
+    }
+
+    /**
+     * Remove a cohort enrolment instance from a course, and optionally its linked group.
+     *
+     * Deleting the instance unenrols every user it enrolled: core drops their role
+     * assignments and the group memberships that instance owned, and for users this was
+     * their last enrolment method in the course it also removes the data Moodle discards
+     * on unenrolment (course grades, group memberships, last access).
+     *
+     * The linked group is deleted as well unless $keepgroup is set, or unless another
+     * synchronised enrolment instance of the same course points at it — deleting a shared
+     * group would silently empty the other instance, so it is always kept in that case.
+     *
+     * @param int $cohortid The cohort ID the enrolment instance must belong to.
+     * @param int $enrolid The enrol instance ID to delete.
+     * @param bool $keepgroup True to keep the linked group instead of deleting it.
+     * @return string One of the GROUP_* constants, describing what happened to the group.
+     * @throws \moodle_exception If the enrolment instance is not found or the enrol plugin is missing.
+     */
+    public static function delete_enrolment(int $cohortid, int $enrolid, bool $keepgroup = false): string {
+        global $DB;
+
+        $enrol = $DB->get_record('enrol', ['id' => $enrolid, 'enrol' => 'cohort', 'customint1' => $cohortid], '*', MUST_EXIST);
+
+        // Resolve the linked group before the instance goes away. Core does not clear
+        // customint2 when a group is deleted, so a link pointing at a group that no longer
+        // exists in that course counts as "no group" here, as the detail page displays it.
+        $group = null;
+        if (!empty($enrol->customint2)) {
+            $group = $DB->get_record('groups', ['id' => $enrol->customint2, 'courseid' => $enrol->courseid]) ?: null;
+        }
+
+        // Both enrol_cohort and enrol_meta store the group they synchronise in customint2,
+        // so the same group can serve several instances of the course.
+        $shared = $group !== null && $DB->record_exists_select(
+            'enrol',
+            "id <> :enrolid AND courseid = :courseid AND customint2 = :groupid AND enrol IN ('cohort', 'meta')",
+            ['enrolid' => $enrol->id, 'courseid' => $enrol->courseid, 'groupid' => $group->id]
+        );
+
+        $plugin = enrol_get_plugin('cohort');
+        if (!$plugin) {
+            throw new \moodle_exception('enrolpluginmissing', 'local_cohort_manager');
+        }
+
+        // Unenrols the users, then deletes the instance and fires \core\event\enrol_instance_deleted.
+        $plugin->delete_instance($enrol);
+
+        if (!$group) {
+            $status = self::GROUP_NONE;
+        } else if ($keepgroup) {
+            $status = self::GROUP_KEPT;
+        } else if ($shared) {
+            $status = self::GROUP_SHARED;
+        } else {
+            groups_delete_group($group);
+            $status = self::GROUP_DELETED;
+        }
+
+        $event = \local_cohort_manager\event\enrolment_deleted::create([
+            'context'  => \context_course::instance($enrol->courseid),
+            'objectid' => $enrol->id,
+            'other'    => ['cohortid' => $cohortid, 'groupstatus' => $status],
+        ]);
+        $event->trigger();
+
+        return $status;
     }
 
     /**

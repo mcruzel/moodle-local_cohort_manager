@@ -80,3 +80,10 @@
 .local-cohort-manager-detail .modal-header .close:focus {
     opacity: 0.75;
 }
+
+/* The "S" (supprimer/remove) button of the enrolments table carries a single glyph, so
+   give it a footprint of its own instead of letting the padding collapse around it. */
+.local-cohort-manager-detail .local-cohort-manager-remove-enrol {
+    min-width: 2rem;
+    font-weight: 700;
+}

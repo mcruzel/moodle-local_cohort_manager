@@ -71,6 +71,7 @@ $data = [
             'groupid'          => $row->groupid ?? 0,
             'groupname'        => $row->groupname ?? '',
             'has_group'        => !empty($row->groupid),
+            'user_count'       => (int)$row->usercount,
         ];
     }, $enrolments)),
 ];

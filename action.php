@@ -65,6 +65,25 @@ switch ($action) {
             \core\output\notification::NOTIFY_SUCCESS);
         break;
 
+    case 'deleteenrolment':
+        $enrolid = required_param('enrolid', PARAM_INT);
+        // Unticked checkboxes are not posted at all, so the group is deleted by default.
+        $keepgroup = optional_param('keepgroup', 0, PARAM_BOOL);
+        $groupstatus = \local_cohort_manager\manager::delete_enrolment($cohortid, $enrolid, (bool)$keepgroup);
+        if ($groupstatus === \local_cohort_manager\manager::GROUP_DELETED) {
+            $message = get_string('enrolmentdeletedwithgroup', 'local_cohort_manager');
+            $type = \core\output\notification::NOTIFY_SUCCESS;
+        } else if ($groupstatus === \local_cohort_manager\manager::GROUP_SHARED) {
+            // The group survived a deletion request: say so rather than report a plain success.
+            $message = get_string('enrolmentdeletedgroupshared', 'local_cohort_manager');
+            $type = \core\output\notification::NOTIFY_WARNING;
+        } else {
+            $message = get_string('enrolmentdeleted', 'local_cohort_manager');
+            $type = \core\output\notification::NOTIFY_SUCCESS;
+        }
+        redirect($returnurl, $message, null, $type);
+        break;
+
     case 'deletecohort':
         $confirmname = required_param('confirmname', PARAM_TEXT);
         try {
